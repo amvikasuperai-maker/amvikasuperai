@@ -349,40 +349,40 @@
             submitQuery();
         }
 
-        // FAST & ACCURATE GROQ ENGINE (llama-3.1-8b-instant)
-        async function fetchAIResponse(userPrompt) {
-            const cleanKey = AI_API_KEY.trim();
-            if (!cleanKey || cleanKey.includes("PASTE_YOUR_GROQ_KEY_HERE")) {
-                return "⚠️ API Key Missing: Please paste your Groq Key (gsk_...) in Line 188.";
-            }
+        // FAST & HIGH ACCURACY GROQ ENGINE (llama-3.3-70b-versatile)
+async function fetchAIResponse(userPrompt) {
+    const cleanKey = AI_API_KEY.trim();
+    if (!cleanKey || cleanKey.includes("PASTE_YOUR_GROQ_KEY_HERE")) {
+        return "⚠️ API Key Missing: Please paste your Groq Key (gsk_...) in Line 188.";
+    }
 
-            try {
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${cleanKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "llama-3.1-8b-instant",
-                        messages: [
-                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
-                            { role: "user", content: userPrompt }
-                        ]
-                    })
-                });
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cleanKey}`
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
+                    { role: "user", content: userPrompt }
+                ]
+            })
+        });
 
-                if (!response.ok) {
-                    const err = await response.json();
-                    return `⚠️ Groq Error ${response.status}: ${err.error?.message || "Check API Key"}`;
-                }
-
-                const data = await response.json();
-                return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
-            } catch (e) {
-                return "⚠️ Network Error with AI API.";
-            }
+        if (!response.ok) {
+            const err = await response.json();
+            return `⚠️ Groq Error ${response.status}: ${err.error?.message || "Check API Key"}`;
         }
+
+        const data = await response.json();
+        return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
+    } catch (e) {
+        return "⚠️ Network Error with AI API.";
+    }
+}
 
         async function submitQuery() {
             const queryInput = document.getElementById("userQueryInput");
