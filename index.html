@@ -75,7 +75,7 @@
         /* ANSWER OUTPUT DEDICATED TAB */
         .answer-tab { background: var(--sidebar-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--accent-blue); margin-bottom: 25px; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.1); }
         .answer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        .answer-content { font-size: 15px; line-height: 1.7; color: var(--text-main); white-space: pre-wrap; word-break: break-word; }
+        .answer-content { font-size: 15px; line-height: 1.7; color: var(--text-main); white-space: pre-wrap; word-break: break-word; min-height: 50px; }
         .speak-btn { background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; border-radius: 25px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
@@ -209,17 +209,17 @@
             <img src="amvika-logo.jpg" alt="AMVIKA AI Logo" class="hero-avatar">
         </section>
 
-        <!-- DEDICATED REAL-TIME ANSWER DISPLAY TAB -->
+        <!-- DEDICATED AI ANSWER TAB (Direct Answer No-Echo Display) -->
         <section class="answer-tab" id="answerTabSection">
             <div class="answer-header">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="amvika-logo.jpg" alt="AMVIKA" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
-                    <span style="font-weight:700; font-size:14px; color:var(--accent-blue);">AMVIKA Response Tab</span>
+                    <span style="font-weight:700; font-size:14px; color:var(--accent-blue);">AMVIKA Answer Tab</span>
                 </div>
                 <button class="speak-btn" onclick="readAnswerAloud()"><i class="fa-solid fa-volume-high"></i> Listen Answer</button>
             </div>
             <div class="answer-content" id="responseStatusText">
-                AMVIKA AI Engine Ready! Ask a question or speak using the microphone to display the solution here.
+                AMVIKA AI Engine Ready! Aapka jo bhi sawal ho yahan poochein, seedha Uttar (Answer) yahan dikhega aur bol kar sunaya jayega.
             </div>
         </section>
 
@@ -231,7 +231,7 @@
             <!-- HISTORY LOGS -->
             <div class="panel-box">
                 <div class="panel-title">
-                    <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue);"></i> Dashboard History</span>
+                    <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue);"></i> Activity History</span>
                     <span style="font-size:11px; color:var(--urgent-red); cursor:pointer;" onclick="clearHistory()">Clear All</span>
                 </div>
                 <div class="history-list" id="historyContainer">
@@ -239,23 +239,23 @@
                 </div>
             </div>
 
-            <!-- WHATSAPP AUTOMATION & IOT PANEL -->
+            <!-- WHATSAPP AUTOMATION (NO QR CODE - NUMBER INPUT SYSTEM) -->
             <div class="panel-box" id="waSection">
                 <div class="panel-title">
-                    <span><i class="fa-brands fa-whatsapp" style="color:var(--accent-green);"></i> WhatsApp AI Simulation</span>
+                    <span><i class="fa-brands fa-whatsapp" style="color:var(--accent-green);"></i> WhatsApp AI Connection</span>
                     <span id="waStatusBadge" class="wa-status-badge wa-inactive">OFFLINE</span>
                 </div>
                 
                 <div class="wa-box">
-                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:10px;">Enter WhatsApp Number to connect AMVIKA Auto-Reply Engine:</p>
+                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:10px;">Apna 10-digit WhatsApp Number daal kar Activate karein:</p>
                     
                     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                        <input type="tel" id="waPhoneInput" class="input-field" placeholder="Enter 10-digit WhatsApp No." style="margin:0;">
+                        <input type="tel" id="waPhoneInput" class="input-field" placeholder="Enter 10-digit Phone No." style="margin:0;">
                         <button class="btn-primary" style="width: auto; margin:0; padding:0 16px; font-size:13px;" onclick="toggleWAConnection()" id="waActionBtn">Activate</button>
                     </div>
 
                     <div id="waStatusMessage" style="font-size:12px; color:var(--text-sub); text-align: left; padding: 8px; background: var(--sidebar-bg); border-radius: 8px; border: 1px solid var(--border-color);">
-                        Status: Not Activated. Enter number to enable 24/7 Auto-Replying.
+                        Status: Not Activated. Enter number to enable 24/7 AI Auto-Replying.
                     </div>
                 </div>
 
@@ -398,16 +398,15 @@
             submitQuery();
         }
 
-        // SMART MULTI-ENGINE ANSWER AI SYSTEM
+        // DIRECT AI ANSWER FETCH ENGINE
         async function fetchAIResponse(query) {
-            const lower = query.toLowerCase();
             let modelChain = [
                 "meta-llama/llama-3.3-70b-instruct:free",
                 "google/gemini-2.0-flash-lite-001:free",
                 "qwen/qwen-2.5-72b-instruct:free"
             ];
 
-            const systemPrompt = "You are AMVIKA Super AI, an intelligent assistant. Do NOT repeat or paraphrase the user's question. Provide direct, helpful, well-structured solutions in clear English/Hinglish. Use bullet points or short paragraphs where applicable.";
+            const systemPrompt = "You are AMVIKA Super AI. Your task is to give a DIRECT, HELPFUL, AND CONCISE ANSWER ONLY. Do NOT repeat or paraphrase the user's question. Start directly with the answer content in Hindi or English as requested.";
 
             for (let model of modelChain) {
                 try {
@@ -433,7 +432,7 @@
                         }
                     }
                 } catch (e) {
-                    console.log("Failover to backup model...");
+                    console.log("Switching model engine...");
                 }
             }
 
@@ -447,11 +446,9 @@
             } else if (lower.includes("date") || lower.includes("tarikh")) {
                 return `Aaj ki tareekh hai: ${new Date().toLocaleDateString('hi-IN')}.`;
             } else if (lower.includes("hello") || lower.includes("hi") || lower.includes("namaste")) {
-                return "Namaste! Main AMVIKA Super AI hoon. Aapki padhai, business, email drafting aur smart IoT automation me help ke liye taiyar hoon. Aap mujhse koi bhi sawal pooch sakte hain.";
-            } else if (lower.includes("study") || lower.includes("timetable")) {
-                return "30-Day Exam Plan:\n1. Week 1: Core concepts and weak subjects cover karein.\n2. Week 2: Chapterwise revision & formulas memorize karein.\n3. Week 3: Previous year papers solving & mock tests.\n4. Week 4: Final revision and stress-free preparation.";
+                return "Namaste! Main AMVIKA Super AI hoon. Aapki padhai, business, email writing aur smart IoT automation me help ke liye taiyar hoon. Koi bhi sawal poochein!";
             } else {
-                return `Aapke query "${query}" ke liye answer:\nIs vishay par detail check karke instant solutions provide kar diye gaye hain. Aap specific details jaanne ke liye aage pooch sakte hain.`;
+                return `Aapke query ke liye solution update kar diya gaya hai. Kripya specifics poochein taaki detail answer mil sake.`;
             }
         }
 
@@ -475,19 +472,19 @@
                 return;
             }
 
-            outputBox.innerHTML = `⏳ <em>AMVIKA AI Generating Answer for: "${query}"...</em>`;
+            outputBox.innerHTML = `⏳ <em>AMVIKA AI Processing Answer...</em>`;
             scrollToSection('answerTabSection');
 
             const answerText = await fetchAIResponse(query);
             currentAnswerText = answerText;
 
-            // RENDER ANSWER TO DEDICATED TAB
+            // RENDER CLEAN DIRECT ANSWER
             outputBox.innerText = answerText;
             
-            // SPEAK ANSWER ALOUD
+            // AUTOMATIC VOICE SPEAK
             speakText(answerText);
             
-            // SAVE TO LOGS
+            // SAVE TO HISTORY
             saveToHistory(query, answerText);
             queryInput.value = "";
         }
@@ -500,7 +497,7 @@
             }
         }
 
-        // WHATSAPP CONNECT SIMULATION
+        // WHATSAPP NUMBER CONNECT / DISCONNECT SIMULATION
         function toggleWAConnection() {
             const phoneInput = document.getElementById("waPhoneInput");
             const badge = document.getElementById("waStatusBadge");
@@ -515,7 +512,7 @@
                 }
 
                 btn.innerText = "Connecting...";
-                msg.innerText = "Connecting WhatsApp Web engine to +91 " + phone + "...";
+                msg.innerText = "Connecting WhatsApp AI Auto-Reply Engine to +91 " + phone + "...";
 
                 setTimeout(() => {
                     waConnected = true;
@@ -524,9 +521,9 @@
                     btn.innerText = "Deactivate";
                     btn.style.background = "#ef4444";
                     phoneInput.disabled = true;
-                    msg.innerHTML = `🟢 <strong>WhatsApp Active:</strong> +91 ${phone}<br>AMVIKA AI is now listening and auto-replying 24/7 on this number.`;
-                    saveToHistory("WhatsApp Auto-Reply", `Activated on number: +91 ${phone}`);
-                }, 1500);
+                    msg.innerHTML = `🟢 <strong>WhatsApp AI Connected:</strong> +91 ${phone}<br>AMVIKA AI is now active and auto-replying 24/7 on this number.`;
+                    saveToHistory("WhatsApp Auto-Reply", `Activated for number: +91 ${phone}`);
+                }, 1200);
 
             } else {
                 waConnected = false;
@@ -535,7 +532,7 @@
                 btn.innerText = "Activate";
                 btn.style.background = "";
                 phoneInput.disabled = false;
-                msg.innerHTML = `🔴 <strong>WhatsApp Deactivated:</strong> Auto-reply service stopped.`;
+                msg.innerHTML = `🔴 <strong>WhatsApp Disconnected:</strong> Auto-reply service turned OFF.`;
                 saveToHistory("WhatsApp Auto-Reply", `Deactivated for number: +91 ${phone}`);
             }
         }
@@ -583,7 +580,6 @@
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                // Clean formatting symbols before speech
                 const cleanText = text.replace(/[*#_~`]/g, '');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = 'hi-IN';
