@@ -388,7 +388,7 @@ async function fetchAIResponse(userPrompt) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "google/gemini-2.0-flash-exp:free", // Working Free Model
+                model: "meta-llama/llama-3.3-70b-instruct:free", // Working Free Model
                 messages: [
                     { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
                     { role: "user", content: userPrompt }
