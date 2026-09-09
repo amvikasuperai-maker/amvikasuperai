@@ -219,8 +219,8 @@
         const GOD_EMAIL = "amvikasuperai@gmail.com";
         const GOD_KEY = "AMVIKA-SUPER-GOD-MODE-UNLIMITED-999";
 
-        // ⬇️ PASTE YOUR API KEY HERE (AIzaSy... for Gemini OR gsk_... for Groq)
-        const AI_API_KEY = "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";
+        // ⬇️ PASTE YOUR GROQ API KEY HERE (starts with gsk_)
+        const AI_API_KEY = "gsk_PASTE_YOUR_GROQ_KEY_HERE";
 
         let currentFingerprint = "";
         let currentUserEmail = "Guest";
@@ -329,67 +329,38 @@
             submitQuery();
         }
 
-        // AUTO-DETECT ENGINE (Supports both Google AI Studio and Groq)
+        // GROQ API ENGINE WITH LLAMA3-70B-8192 MODEL
         async function fetchAIResponse(userPrompt) {
             const cleanKey = AI_API_KEY.trim();
-            if (!cleanKey || cleanKey.includes("YOUR_API_KEY_HERE")) {
-                return "⚠️ Key Missing: Please paste a valid API key in Line 188.";
+            if (!cleanKey || cleanKey.includes("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")) {
+                return "⚠️ Key Missing: Please paste a valid Groq API key in Line 188.";
             }
 
-            // IF GROQ API KEY IS PROVIDED (gsk_...)
-            if (cleanKey.startsWith("gsk_")) {
-                try {
-                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${cleanKey}`
-                        },
-                        body: JSON.stringify({
-                            model: "model: "llama3-70b-8192",",
-                            messages: [
-                                { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
-                                { role: "user", content: userPrompt }
-                            ]
-                        })
-                    });
+            try {
+                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${cleanKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "llama3-70b-8192",
+                        messages: [
+                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
+                            { role: "user", content: userPrompt }
+                        ]
+                    })
+                });
 
-                    if (!response.ok) {
-                        const err = await response.json();
-                        return `⚠️ Groq Error ${response.status}: ${err.error?.message || "Invalid Key"}`;
-                    }
-
-                    const data = await response.json();
-                    return data.choices[0]?.message?.content?.trim() || "⚠️ No output from Groq.";
-                } catch (e) {
-                    return "⚠️ Network Error with Groq API.";
+                if (!response.ok) {
+                    const err = await response.json();
+                    return `⚠️ Groq API Error ${response.status}: ${err.error?.message || "Check API Key"}`;
                 }
-            } 
-            // DEFAULT GOOGLE GEMINI ENGINE (AIzaSy...)
-            else {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cleanKey}`;
 
-                try {
-                    const response = await fetch(url, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: [{
-                                parts: [{ text: `You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English).\n\nUser Question: ${userPrompt}` }]
-                            }]
-                        })
-                    });
-
-                    if (!response.ok) {
-                        const errData = await response.json();
-                        return `⚠️ Gemini API Error ${response.status}: ${errData.error?.message || "Key must start with AIzaSy."}`;
-                    }
-
-                    const data = await response.json();
-                    return data.candidates[0]?.content?.parts[0]?.text?.trim() || "⚠️ No output generated.";
-                } catch (err) {
-                    return "⚠️ Network Error! Check your internet.";
-                }
+                const data = await response.json();
+                return data.choices[0]?.message?.content?.trim() || "⚠️ No response received from Groq.";
+            } catch (e) {
+                return "⚠️ Network Error! Unable to connect to Groq API.";
             }
         }
 
