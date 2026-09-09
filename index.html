@@ -219,8 +219,8 @@
         const GOD_EMAIL = "amvikasuperai@gmail.com";
         const GOD_KEY = "AMVIKA-SUPER-GOD-MODE-UNLIMITED-999";
 
-        // ⬇️ APNI NAYI GEMINI API KEY NEECHE PASTE KAREIN (QUOTES KE ANDAR)
-        const GEMINI_API_KEY = "AQ.Ab8RN6JAJw5h75Q7VOYf2J9A_2DLm6t1_r_8AOJFDDSzy7iA3g";
+        // ⬇️ PASTE YOUR API KEY HERE (AIzaSy... for Gemini OR gsk_... for Groq)
+        const AI_API_KEY = "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";
 
         let currentFingerprint = "";
         let currentUserEmail = "Guest";
@@ -329,39 +329,67 @@
             submitQuery();
         }
 
-        // DIRECT GOOGLE GEMINI 2.0 FLASH API ENGINE
+        // AUTO-DETECT ENGINE (Supports both Google AI Studio and Groq)
         async function fetchAIResponse(userPrompt) {
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_NEW_GEMINI_API_KEY_HERE" || GEMINI_API_KEY.trim() === "") {
-                return "⚠️ Key Missing: Please paste your new valid Gemini API key in Line 188 of the code.";
+            const cleanKey = AI_API_KEY.trim();
+            if (!cleanKey || cleanKey.includes("YOUR_API_KEY_HERE")) {
+                return "⚠️ Key Missing: Please paste a valid API key in Line 188.";
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY.trim()}`;
+            // IF GROQ API KEY IS PROVIDED (gsk_...)
+            if (cleanKey.startsWith("gsk_")) {
+                try {
+                    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${cleanKey}`
+                        },
+                        body: JSON.stringify({
+                            model: "llama-3.3-70b-versatile",
+                            messages: [
+                                { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
+                                { role: "user", content: userPrompt }
+                            ]
+                        })
+                    });
 
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: `You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English).\n\nUser Question: ${userPrompt}` }]
-                        }]
-                    })
-                });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        return `⚠️ Groq Error ${response.status}: ${err.error?.message || "Invalid Key"}`;
+                    }
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    return `⚠️ API Error ${response.status}: ${errData.error?.message || "Invalid Key or Limit Reached."}`;
+                    const data = await response.json();
+                    return data.choices[0]?.message?.content?.trim() || "⚠️ No output from Groq.";
+                } catch (e) {
+                    return "⚠️ Network Error with Groq API.";
                 }
+            } 
+            // DEFAULT GOOGLE GEMINI ENGINE (AIzaSy...)
+            else {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cleanKey}`;
 
-                const data = await response.json();
-                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                    return data.candidates[0].content.parts[0].text.trim();
-                } else {
-                    return "⚠️ No output generated from Gemini AI.";
+                try {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{ text: `You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English).\n\nUser Question: ${userPrompt}` }]
+                            }]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        return `⚠️ Gemini API Error ${response.status}: ${errData.error?.message || "Key must start with AIzaSy."}`;
+                    }
+
+                    const data = await response.json();
+                    return data.candidates[0]?.content?.parts[0]?.text?.trim() || "⚠️ No output generated.";
+                } catch (err) {
+                    return "⚠️ Network Error! Check your internet.";
                 }
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                return "⚠️ Network Error! Check your Internet connection.";
             }
         }
 
