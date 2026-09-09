@@ -106,8 +106,9 @@
         @media(max-width: 850px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 260px; transform: translateX(-100%); }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 260px; transform: translateX(-100%); z-index: 100; }
             .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay { display: none; }
             .sidebar-overlay.active { display: block; }
             .main-content { padding: 16px; }
             .hero-banner { flex-direction: column-reverse; text-align: center; }
@@ -126,7 +127,7 @@
         <img src="amvika-logo.jpg" alt="Logo" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent-blue);">
     </header>
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay">
@@ -159,7 +160,7 @@
             </div>
             
             <ul class="nav-menu">
-                <li class="nav-item active"><i class="fa-solid fa-house"></i> Workspace</li>
+                <li class="nav-item active" onclick="closeSidebar()"><i class="fa-solid fa-house"></i> Workspace</li>
                 <li class="nav-item" onclick="scrollToSection('answerTabSection')"><i class="fa-solid fa-robot"></i> AI Answer Board</li>
                 <li class="nav-item" onclick="scrollToSection('historySection')"><i class="fa-solid fa-clock-rotate-left"></i> Activity Logs</li>
                 <li class="nav-item" onclick="scrollToSection('iotSection')"><i class="fa-solid fa-house-signal"></i> Smart Control</li>
@@ -194,7 +195,7 @@
                 
                 <div class="search-voice-box">
                     <input type="text" id="userQueryInput" class="search-input" placeholder="Type or speak any question..." onkeydown="if(event.key==='Enter') submitQuery()">
-                    <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput()"><i class="fa-solid fa-microphone"></i></button>
+                    <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput(event)"><i class="fa-solid fa-microphone"></i></button>
                     <button class="send-btn" onclick="submitQuery()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
@@ -271,6 +272,7 @@
         let isListening = false;
         let userHistory = [];
         let currentAnswerText = "";
+        let activeQueryId = 0; // Ensures single query execution
 
         FingerprintJS.load().then(fp => fp.get()).then(res => {
             currentFingerprint = res.visitorId;
@@ -281,9 +283,14 @@
             document.getElementById("sidebarOverlay").classList.toggle("active");
         }
 
+        function closeSidebar() {
+            document.getElementById("appSidebar").classList.remove("open");
+            document.getElementById("sidebarOverlay").classList.remove("active");
+        }
+
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-            if (window.innerWidth <= 850) toggleSidebar();
+            if (window.innerWidth <= 850) closeSidebar();
         }
 
         async function handleLogin() {
@@ -335,7 +342,6 @@
             document.getElementById("personaSelector").value = selectedRole;
             switchPersonaMode(selectedRole);
             loadHistoryFromStorage();
-            initVoiceRecognition();
         }
 
         function switchPersonaMode(mode) {
@@ -369,23 +375,18 @@
             submitQuery();
         }
 
-        // DIRECT LIVE AI ENGINE (GEMINI/LLM STYLE)
+        // SINGLE AI ENGINE CALL
         async function fetchAIResponse(query) {
-            // Priority 1: Multi-Provider LLM Text Route
             try {
-                const promptText = `You are AMVIKA Super AI like Gemini or ChatGPT. Provide a direct, clean, accurate answer in Hindi/English for: ${query}. Do not repeat the question.`;
+                const promptText = `Provide a direct, clear answer in simple Hindi/English for: ${query}. Do not repeat the prompt.`;
                 const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptText)}`);
                 if (res.ok) {
                     const data = await res.text();
-                    if (data && data.trim().length > 0) {
-                        return data.trim();
-                    }
+                    if (data && data.trim().length > 0) return data.trim();
                 }
             } catch (err) {
-                console.log("Primary LLM Endpoint busy, routing to Secondary...");
+                console.log("Network error, switching to quick engine");
             }
-
-            // Priority 2: Direct Fallback Math & Knowledge Engine
             return computeLocalSmartAnswer(query);
         }
 
@@ -404,7 +405,7 @@
                 return `Aaj ki tareekh hai: ${new Date().toLocaleDateString('hi-IN')}.`;
             }
 
-            return `Answer for: "${query}"\n\nAMVIKA AI Processed your query. For best results, ask specific questions like "2 ki table", "Photosynthesis kya hai", "Leave application draft karo".`;
+            return `Answer for: "${query}"\n\nAMVIKA AI Processed your query successfully.`;
         }
 
         async function submitQuery() {
@@ -414,7 +415,14 @@
 
             if (!query) return;
 
-            // IoT Voice Commands Check
+            // Stop any ongoing Speech Immediately
+            stopSpeech();
+            if (recognition && isListening) recognition.stop();
+
+            // Unique ID to prevent multiple responses
+            const thisQueryId = ++activeQueryId;
+
+            // Check IoT Commands
             const lower = query.toLowerCase();
             if (lower.includes("light on") || lower.includes("लाइट ऑन")) {
                 document.getElementById("iot_light").checked = true;
@@ -428,33 +436,34 @@
                 return;
             }
 
-            outputBox.innerHTML = `⏳ <em>AMVIKA AI Generating Answer...</em>`;
+            outputBox.innerHTML = `⏳ <em>AMVIKA AI Processing...</em>`;
             scrollToSection('answerTabSection');
 
             const answerText = await fetchAIResponse(query);
-            currentAnswerText = answerText;
 
-            // RENDER CLEAN DIRECT ANSWER
+            // Cancel if another query was initiated in parallel
+            if (thisQueryId !== activeQueryId) return;
+
+            currentAnswerText = answerText;
             outputBox.innerText = answerText;
             
-            // SPEAK AUDIO OUTPUT
+            // Speak New Answer
             speakText(answerText);
             
-            // LOG ACTIVITY
+            // Log History
             saveToHistory(query, answerText);
             queryInput.value = "";
         }
 
         function readAnswerAloud() {
             if (currentAnswerText) {
+                stopSpeech();
                 speakText(currentAnswerText);
-            } else {
-                speakText(document.getElementById("responseStatusText").innerText);
             }
         }
 
         function saveToHistory(req, res) {
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const historyItem = { time, req, res, user: currentUserEmail };
             
             userHistory.unshift(historyItem);
@@ -481,7 +490,7 @@
                 <div class="history-card">
                     <div class="history-time">⏱️ ${item.time}</div>
                     <div class="history-req">❓ Task: "${item.req}"</div>
-                    <div class="history-res">💡 Answer: ${item.res.substring(0, 110)}...</div>
+                    <div class="history-res">💡 Answer: ${item.res.substring(0, 100)}...</div>
                 </div>
             `).join('');
         }
@@ -492,9 +501,15 @@
             renderHistory();
         }
 
-        function speakText(text) {
+        function stopSpeech() {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
+            }
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                stopSpeech(); // Cut previous speech immediately
                 const cleanText = text.replace(/[*#_~`]/g, '');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = 'hi-IN';
@@ -505,6 +520,7 @@
         }
 
         function toggleIoT(deviceName, status) {
+            stopSpeech();
             const msg = `Smart Device ${deviceName} turned ${status ? 'ON' : 'OFF'}.`;
             document.getElementById("responseStatusText").innerText = msg;
             speakText(msg);
@@ -522,8 +538,9 @@
 
             recognition.onstart = () => {
                 isListening = true;
+                stopSpeech(); // Stop speech when mic starts listening
                 document.getElementById("micBtn").classList.add("active");
-                document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak your question clearly!";
+                document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak now!";
             };
 
             recognition.onresult = (e) => {
@@ -538,10 +555,12 @@
             };
         }
 
-        function toggleVoiceInput() {
-            if (!recognition) {
-                initVoiceRecognition();
-            }
+        function toggleVoiceInput(e) {
+            if (e) e.stopPropagation();
+            if (!recognition) initVoiceRecognition();
+
+            stopSpeech(); // Cut any ongoing AI speech immediately
+            
             if (isListening) {
                 recognition.stop();
             } else {
