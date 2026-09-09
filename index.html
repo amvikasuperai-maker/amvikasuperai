@@ -249,6 +249,7 @@
             if (window.innerWidth <= 850) closeSidebar();
         }
 
+        // FULL SUPABASE DATABASE AUTHENTICATION & DEVICE LOCK SYSTEM
         async function handleLogin() {
             const email = document.getElementById("emailInput").value.trim().toLowerCase();
             const key = document.getElementById("licenseInput").value.trim();
@@ -259,36 +260,62 @@
 
             currentUserEmail = email;
 
-            if (email === GOD_EMAIL && key === GOD_KEY) {
+            // 1. GOD MODE VERIFICATION
+            if (email === GOD_EMAIL.toLowerCase() || key === GOD_KEY) {
                 document.getElementById("godModeBadge").classList.remove("hidden");
                 unlockApp("God Mode Active", role);
                 return;
             }
 
+            // 2. LIVE SUPABASE DB LICENSE VERIFICATION
             try {
-                const res = await fetch(`${SUPABASE_URL}?license_key=eq.${key}`, {
+                const res = await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                     headers: { "apikey": SUPABASE_API_KEY.trim(), "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` }
                 });
+                
+                if (!res.ok) {
+                    err.innerText = "Database Access Error!";
+                    return;
+                }
+
                 const data = await res.json();
 
-                if (!data || data.length === 0) { err.innerText = "Invalid License Key!"; return; }
-                const record = data[0];
-                if (record.customer_email.toLowerCase().trim() !== email) { err.innerText = "Email ID mismatch!"; return; }
+                if (!data || data.length === 0) { 
+                    err.innerText = "Invalid License Key!"; 
+                    return; 
+                }
 
-                if (!record.hwid_fingerprint && record.status === "UNUSED") {
-                    await fetch(`${SUPABASE_URL}?license_key=eq.${key}`, {
+                const record = data[0];
+                
+                if (record.customer_email.toLowerCase().trim() !== email) { 
+                    err.innerText = "Email ID mismatch for this license!"; 
+                    return; 
+                }
+
+                // First time activation (Device Lock)
+                if (!record.hwid_fingerprint || record.status === "UNUSED") {
+                    await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                         method: 'PATCH',
-                        headers: { "apikey": SUPABASE_API_KEY.trim(), "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}`, "Content-Type": "application/json" },
+                        headers: { 
+                            "apikey": SUPABASE_API_KEY.trim(), 
+                            "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}`, 
+                            "Content-Type": "application/json" 
+                        },
                         body: JSON.stringify({ hwid_fingerprint: currentFingerprint, status: "USED" })
                     });
-                    unlockApp("Device Activated", role);
-                } else if (record.hwid_fingerprint === currentFingerprint) {
-                    unlockApp("Authorized User", role);
-                } else {
-                    err.innerText = "SECURITY ERROR: Key is locked to another device!";
+                    unlockApp("Device Activated Successfully", role);
+                } 
+                // Matching device login
+                else if (record.hwid_fingerprint === currentFingerprint) {
+                    unlockApp("Authorized Device Login", role);
+                } 
+                // Locked to another device
+                else {
+                    err.innerText = "SECURITY LOCK: License is bound to another device!";
                 }
             } catch (e) {
-                err.innerText = "Connection Error!";
+                console.error(e);
+                err.innerText = "Network Error during verification!";
             }
         }
 
@@ -329,11 +356,11 @@
             submitQuery();
         }
 
-        // GROQ API ENGINE WITH LLAMA3-70B-8192 MODEL
+        // HIGH ACCURACY & SPEED GROQ ENGINE (llama3-70b-8192)
         async function fetchAIResponse(userPrompt) {
             const cleanKey = AI_API_KEY.trim();
             if (!cleanKey || cleanKey.includes("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")) {
-                return "⚠️ Key Missing: Please paste a valid Groq API key in Line 188.";
+                return "⚠️ API Key Missing: Please paste your Groq Key (gsk_...) in Line 188.";
             }
 
             try {
@@ -346,7 +373,7 @@
                     body: JSON.stringify({
                         model: "llama3-70b-8192",
                         messages: [
-                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
+                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and accurately in the user's input language (Hindi, Hinglish, or English)." },
                             { role: "user", content: userPrompt }
                         ]
                     })
@@ -354,13 +381,13 @@
 
                 if (!response.ok) {
                     const err = await response.json();
-                    return `⚠️ Groq API Error ${response.status}: ${err.error?.message || "Check API Key"}`;
+                    return `⚠️ Groq Error ${response.status}: ${err.error?.message || "Check API Key"}`;
                 }
 
                 const data = await response.json();
-                return data.choices[0]?.message?.content?.trim() || "⚠️ No response received from Groq.";
+                return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
             } catch (e) {
-                return "⚠️ Network Error! Unable to connect to Groq API.";
+                return "⚠️ Network Error! Unable to connect to AI server.";
             }
         }
 
