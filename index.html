@@ -349,7 +349,7 @@
             submitQuery();
         }
 
-        // FAST & HIGH ACCURACY GROQ ENGINE (llama-3.3-70b-versatile)
+        // STABLE & ACTIVE GROQ ENGINE (openai/gpt-oss-120b)
 async function fetchAIResponse(userPrompt) {
     const cleanKey = AI_API_KEY.trim();
     if (!cleanKey || cleanKey.includes("PASTE_YOUR_GROQ_KEY_HERE")) {
@@ -364,7 +364,7 @@ async function fetchAIResponse(userPrompt) {
                 "Authorization": `Bearer ${cleanKey}`
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: "openai/gpt-oss-120b",
                 messages: [
                     { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
                     { role: "user", content: userPrompt }
