@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
     
+    <!-- 📱 MOBILE CONSOLE LOGS (Eruda Inspector) -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+
     <style>
         /* PURPLE-BLUE THEME COLOR PALETTE */
         :root {
@@ -225,8 +229,8 @@
     </div>
 
     <script>
-        // 🔑 CONFIGURATION & API KEYS
-        const OPENAI_API_KEY = "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"; // ⬅️ PASTE YOUR OPENAI (CHATGPT) KEY HERE
+        // 🔑 OPENROUTER API INTEGRATION
+        const OPENROUTER_API_KEY = "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"; // ⬅️ PASTE YOUR OPENROUTER KEY HERE
         const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
         const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr";
         const GOD_EMAIL = "amvikasuperai@gmail.com";
@@ -240,7 +244,6 @@
         let currentAnswerText = "";
         let activeQueryId = 0;
 
-        // Load or save permanent device ID
         FingerprintJS.load().then(fp => fp.get()).then(res => {
             if (!currentFingerprint) {
                 currentFingerprint = res.visitorId;
@@ -305,11 +308,9 @@
                     return; 
                 }
 
-                // Device binding logic with fallback local check
                 const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint;
 
                 if (!record.hwid_fingerprint || record.status === "UNUSED" || record.hwid_fingerprint === "") {
-                    // First-time registration for this license
                     await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                         method: 'PATCH',
                         headers: { 
@@ -322,7 +323,6 @@
                     unlockApp("Device Activated", role);
                 } 
                 else if (record.hwid_fingerprint === savedFp || record.hwid_fingerprint === currentFingerprint) {
-                    // Match found
                     unlockApp("Authorized User", role);
                 } 
                 else {
@@ -371,44 +371,46 @@
             submitQuery();
         }
 
-        // 🤖 CHATGPT (OPENAI) API FETCH FUNCTION
-async function fetchAIResponse(userPrompt) {
-    const cleanKey = OPENAI_API_KEY.trim();
-    
-    if (!cleanKey || cleanKey.includes("YOUR_OPENAI_API_KEY_HERE")) {
-        return "⚠️ OpenAI API Key Missing: Please paste your OpenAI Key in the code.";
-    }
+        // 🌐 OPENROUTER API FETCH FUNCTION (NO CORS ISSUES)
+        async function fetchAIResponse(userPrompt) {
+            const cleanKey = OPENROUTER_API_KEY.trim();
+            if (!cleanKey || cleanKey.includes("YOUR_OPENROUTER_KEY_HERE")) {
+                return "⚠️ OpenRouter Key Missing: Please paste your Key in line 198.";
+            }
 
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${cleanKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [
-                    { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
-                    { role: "user", content: userPrompt }
-                ],
-                temperature: 0.7
-            })
-        });
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${cleanKey}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.href, // OpenRouter Requirement
+                        "X-Title": "AMVIKA AI Workspace"
+                    },
+                    body: JSON.stringify({
+                        // Using Fast & Free Gemini Model on OpenRouter
+                        model: "google/gemini-2.0-flash-lite-001",
+                        messages: [
+                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
+                            { role: "user", content: userPrompt }
+                        ]
+                    })
+                });
 
-        // Parse response
-        const data = await response.json();
+                const data = await response.json();
 
-        if (!response.ok) {
-            return `⚠️ OpenAI Error (${response.status}): ${data.error?.message || "Check API key or account quota."}`;
+                if (!response.ok) {
+                    console.error("OpenRouter API Error:", data);
+                    return `⚠️ OpenRouter Error (${response.status}): ${data.error?.message || "Check API Key or Account Limits."}`;
+                }
+
+                return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
+            } catch (e) {
+                console.error("Network Exception:", e);
+                return "⚠️ Network Error: Check internet connection or API Key status.";
+            }
         }
 
-        return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
-    } catch (e) {
-        console.error("Fetch Error details:", e);
-        return "⚠️ Network/CORS Error: If opening directly via file://, run the app through a local server (like Live Server) or check your internet connection.";
-    }
-}
         async function submitQuery() {
             const queryInput = document.getElementById("userQueryInput");
             const query = queryInput.value.trim();
@@ -421,7 +423,7 @@ async function fetchAIResponse(userPrompt) {
 
             const thisQueryId = ++activeQueryId;
 
-            outputBox.innerText = "⚡ AMVIKA AI processing...";
+            outputBox.innerText = "⚡ AMVIKA AI processing via OpenRouter...";
             scrollToSection('answerTabSection');
 
             const answerText = await fetchAIResponse(query);
