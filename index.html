@@ -27,7 +27,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-dark); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; position: relative; }
 
-        /* LOGIN MODAL */
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(9, 13, 22, 0.96); backdrop-filter: blur(12px);
@@ -43,7 +42,6 @@
         .input-field, .select-field { width: 100%; padding: 12px 14px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 14px; outline: none; }
         .btn-primary { width: 100%; padding: 14px; border-radius: 10px; border: none; background: var(--accent-gradient); color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
 
-        /* LAYOUT */
         .sidebar { width: 270px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); padding: 25px 20px; display: flex; flex-direction: column; justify-content: space-between; z-index: 100; transition: transform 0.3s ease; }
         .sidebar-brand { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 25px; }
         .sidebar-logo { max-width: 140px; height: auto; background: #ffffff; padding: 6px 10px; border-radius: 8px; margin-bottom: 12px; }
@@ -71,7 +69,6 @@
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
-        /* ANSWER OUTPUT BOARD */
         .answer-tab { background: var(--sidebar-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--accent-blue); margin-bottom: 25px; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.1); }
         .answer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
         .answer-content { font-size: 15px; line-height: 1.7; color: var(--text-main); white-space: pre-wrap; word-break: break-word; min-height: 60px; }
@@ -91,15 +88,6 @@
         .history-time { font-size: 10px; color: var(--accent-blue); font-weight: 600; margin-bottom: 4px; }
         .history-req { font-weight: 700; color: #fff; margin-bottom: 4px; }
         .history-res { color: var(--text-sub); line-height: 1.4; }
-
-        .iot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .iot-card { background: var(--card-bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
-        .switch { position: relative; display: inline-block; width: 38px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-blue); }
-        input:checked + .slider:before { transform: translateX(18px); }
 
         .hidden { display: none !important; }
 
@@ -129,7 +117,6 @@
 
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    <!-- LOGIN OVERLAY -->
     <div id="loginOverlay">
         <div class="login-card">
             <img src="logo.png" alt="Career Dekho" class="company-logo"><br>
@@ -151,7 +138,6 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
     <aside class="sidebar" id="appSidebar">
         <div>
             <div class="sidebar-brand">
@@ -163,7 +149,6 @@
                 <li class="nav-item active" onclick="closeSidebar()"><i class="fa-solid fa-house"></i> Workspace</li>
                 <li class="nav-item" onclick="scrollToSection('answerTabSection')"><i class="fa-solid fa-robot"></i> AI Answer Board</li>
                 <li class="nav-item" onclick="scrollToSection('historySection')"><i class="fa-solid fa-clock-rotate-left"></i> Activity Logs</li>
-                <li class="nav-item" onclick="scrollToSection('iotSection')"><i class="fa-solid fa-house-signal"></i> Smart Control</li>
             </ul>
         </div>
         
@@ -172,7 +157,6 @@
         </div>
     </aside>
 
-    <!-- MAIN APP CONTENT -->
     <main class="main-content">
         <header class="top-bar">
             <div>
@@ -187,11 +171,10 @@
             </div>
         </header>
 
-        <!-- HERO SECTION -->
         <section class="hero-banner">
             <div class="hero-text">
                 <h1 id="welcomeTitle">Hello! I'm AMVIKA</h1>
-                <p id="welcomeSub">Ask me anything — Math, Coding, Science, Writing or IoT commands.</p>
+                <p id="welcomeSub">Ask me anything — Applications, Math, Coding, or Work emails.</p>
                 
                 <div class="search-voice-box">
                     <input type="text" id="userQueryInput" class="search-input" placeholder="Type or speak any question..." onkeydown="if(event.key==='Enter') submitQuery()">
@@ -202,7 +185,6 @@
             <img src="amvika-logo.jpg" alt="AMVIKA AI Logo" class="hero-avatar">
         </section>
 
-        <!-- REAL-TIME AI ANSWER DISPLAY TAB -->
         <section class="answer-tab" id="answerTabSection">
             <div class="answer-header">
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -212,49 +194,20 @@
                 <button class="speak-btn" onclick="readAnswerAloud()"><i class="fa-solid fa-volume-high"></i> Speak Answer</button>
             </div>
             <div class="answer-content" id="responseStatusText">
-                AMVIKA AI Active! Koi bhi sawal poochein (jaise: 2 ki table, photo-synthesis, leave application, etc.) — Instant Answer yahan dikhega.
+                AMVIKA AI Active! Ask any query, application, or question — Instant detailed answer will appear here.
             </div>
         </section>
 
-        <!-- DYNAMIC WORK CARDS -->
         <section class="grid-cards" id="personaCardsContainer"></section>
 
-        <!-- TWO COLUMN SECTION -->
         <div class="two-column-section" id="historySection">
-            <!-- HISTORY LOGS -->
-            <div class="panel-box">
+            <div class="panel-box" style="grid-column: span 2;">
                 <div class="panel-title">
                     <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue);"></i> Activity History</span>
                     <span style="font-size:11px; color:var(--urgent-red); cursor:pointer;" onclick="clearHistory()">Clear All</span>
                 </div>
                 <div class="history-list" id="historyContainer">
                     <p style="color:var(--text-sub); font-size:12px;">No activity logged yet.</p>
-                </div>
-            </div>
-
-            <!-- SMART IOT CONTROL PANEL -->
-            <div class="panel-box" id="iotSection">
-                <div class="panel-title">
-                    <span><i class="fa-solid fa-house-signal" style="color:var(--accent-blue);"></i> Smart Wi-Fi IoT Control</span>
-                    <span style="font-size:11px; color:var(--accent-blue);">Connected</span>
-                </div>
-                <div class="iot-grid">
-                    <div class="iot-card">
-                        <div><i class="fa-solid fa-lightbulb"></i> <span style="font-size:12px;">Light</span></div>
-                        <label class="switch"><input type="checkbox" id="iot_light" onchange="toggleIoT('Living Room Light', this.checked)"><span class="slider"></span></label>
-                    </div>
-                    <div class="iot-card">
-                        <div><i class="fa-solid fa-snowflake"></i> <span style="font-size:12px;">AC</span></div>
-                        <label class="switch"><input type="checkbox" id="iot_ac" onchange="toggleIoT('Bedroom AC', this.checked)"><span class="slider"></span></label>
-                    </div>
-                    <div class="iot-card">
-                        <div><i class="fa-solid fa-fan"></i> <span style="font-size:12px;">Fan</span></div>
-                        <label class="switch"><input type="checkbox" id="iot_fan" checked onchange="toggleIoT('Ceiling Fan', this.checked)"><span class="slider"></span></label>
-                    </div>
-                    <div class="iot-card">
-                        <div><i class="fa-solid fa-tv"></i> <span style="font-size:12px;">TV</span></div>
-                        <label class="switch"><input type="checkbox" id="iot_tv" onchange="toggleIoT('Smart TV', this.checked)"><span class="slider"></span></label>
-                    </div>
                 </div>
             </div>
         </div>
@@ -272,7 +225,7 @@
         let isListening = false;
         let userHistory = [];
         let currentAnswerText = "";
-        let activeQueryId = 0; // Ensures single query execution
+        let activeQueryId = 0;
 
         FingerprintJS.load().then(fp => fp.get()).then(res => {
             currentFingerprint = res.visitorId;
@@ -348,24 +301,22 @@
             const container = document.getElementById("personaCardsContainer");
             if (mode === "Student") {
                 document.getElementById("welcomeTitle").innerText = "Hello! I'm AMVIKA (Study AI)";
-                document.getElementById("welcomeSub").innerText = "Ask math tables, science concepts, exam plans & summaries.";
+                document.getElementById("welcomeSub").innerText = "Ask math tables, leave applications, or science concepts.";
                 container.innerHTML = `
-                    <div class="action-card" onclick="quickPrompt('2 ki table likho')"><div class="action-icon"><i class="fa-solid fa-calculator"></i></div><h4>2 Ki Table</h4><p style="font-size:12px; color:var(--text-sub);">Multiplication Table</p></div>
-                    <div class="action-card" onclick="quickPrompt('Photosynthesis kya hai simple hindi me samjhao')"><div class="action-icon"><i class="fa-solid fa-leaf"></i></div><h4>Photosynthesis</h4><p style="font-size:12px; color:var(--text-sub);">Science Doubts Solver</p></div>
+                    <div class="action-card" onclick="quickPrompt('3 days leave application for school in English')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>3-Day Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Application Draft</p></div>
+                    <div class="action-card" onclick="quickPrompt('Photosynthesis definition in Hindi')"><div class="action-icon"><i class="fa-solid fa-leaf"></i></div><h4>Photosynthesis</h4><p style="font-size:12px; color:var(--text-sub);">Science Help</p></div>
                 `;
             } else if (mode === "Business") {
                 document.getElementById("welcomeTitle").innerText = "Welcome Boss! (Business Mode)";
-                document.getElementById("welcomeSub").innerText = "Ask for daily sales reports, email strategies, or customer pitch ideas.";
+                document.getElementById("welcomeSub").innerText = "Ask for sales pitch, follow-up emails, or marketing tips.";
                 container.innerHTML = `
-                    <div class="action-card" onclick="quickPrompt('Write a sales pitch email for new client')"><div class="action-icon"><i class="fa-solid fa-chart-line"></i></div><h4>Sales Pitch</h4><p style="font-size:12px; color:var(--text-sub);">Client Email Template</p></div>
-                    <div class="action-card" onclick="quickPrompt('Draft payment follow-up email template')"><div class="action-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div><h4>Payment Follow-up</h4><p style="font-size:12px; color:var(--text-sub);">Client Reminders</p></div>
+                    <div class="action-card" onclick="quickPrompt('Write sales pitch email for client')"><div class="action-icon"><i class="fa-solid fa-chart-line"></i></div><h4>Sales Pitch</h4><p style="font-size:12px; color:var(--text-sub);">Email Template</p></div>
                 `;
             } else {
                 document.getElementById("welcomeTitle").innerText = "Hello! (Work Assistant)";
-                document.getElementById("welcomeSub").innerText = "Draft leave applications, emails, resume points effortlessly.";
+                document.getElementById("welcomeSub").innerText = "Draft leave applications, job emails, resume bullet points.";
                 container.innerHTML = `
-                    <div class="action-card" onclick="quickPrompt('Draft leave application for 2 days to manager')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>Leave Application</h4><p style="font-size:12px; color:var(--text-sub);">Professional Draft</p></div>
-                    <div class="action-card" onclick="quickPrompt('Top 5 job interview tips')"><div class="action-icon"><i class="fa-solid fa-id-card"></i></div><h4>Interview Prep</h4><p style="font-size:12px; color:var(--text-sub);">AI HR Guide</p></div>
+                    <div class="action-card" onclick="quickPrompt('Draft 3 days leave application for office manager')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>Office Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Professional Draft</p></div>
                 `;
             }
         }
@@ -375,37 +326,21 @@
             submitQuery();
         }
 
-        // SINGLE AI ENGINE CALL
+        // REAL DIRECT LIVE AI API (No predefined static text responses)
         async function fetchAIResponse(query) {
             try {
-                const promptText = `Provide a direct, clear answer in simple Hindi/English for: ${query}. Do not repeat the prompt.`;
-                const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptText)}`);
-                if (res.ok) {
-                    const data = await res.text();
-                    if (data && data.trim().length > 0) return data.trim();
+                const systemPrompt = "You are AMVIKA Super AI. Provide complete, accurate, detailed, and directly usable answers (e.g. full leave application with dates/subject, full math solutions, etc.). Do not return generic summary text or placeholders.";
+                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(query)}?system=${encodeURIComponent(systemPrompt)}`);
+                if (response.ok) {
+                    const textData = await response.text();
+                    if (textData && textData.trim().length > 0) {
+                        return textData.trim();
+                    }
                 }
             } catch (err) {
-                console.log("Network error, switching to quick engine");
+                console.error("AI Fetch Error:", err);
             }
-            return computeLocalSmartAnswer(query);
-        }
-
-        function computeLocalSmartAnswer(query) {
-            const lower = query.toLowerCase().trim();
-
-            if (lower.includes("2 ki table") || lower.includes("2 table") || lower.includes("दो की टेबल") || lower.includes("table of 2")) {
-                return "2 ki Table (Multiplication Table of 2):\n\n2 x 1 = 2\n2 x 2 = 4\n2 x 3 = 6\n2 x 4 = 8\n2 x 5 = 10\n2 x 6 = 12\n2 x 7 = 14\n2 x 8 = 16\n2 x 9 = 18\n2 x 10 = 20";
-            }
-
-            if (lower.includes("time") || lower.includes("samay") || lower.includes("baje")) {
-                return `Abhi samay hai: ${new Date().toLocaleTimeString('hi-IN')}.`;
-            }
-
-            if (lower.includes("date") || lower.includes("tareekh") || lower.includes("tarikh")) {
-                return `Aaj ki tareekh hai: ${new Date().toLocaleDateString('hi-IN')}.`;
-            }
-
-            return `Answer for: "${query}"\n\nAMVIKA AI Processed your query successfully.`;
+            return "Unable to process query right now. Please check your internet connection and try again.";
         }
 
         async function submitQuery() {
@@ -415,42 +350,23 @@
 
             if (!query) return;
 
-            // Stop any ongoing Speech Immediately
+            // Cut off previous speech instantly on new question submit
             stopSpeech();
             if (recognition && isListening) recognition.stop();
 
-            // Unique ID to prevent multiple responses
             const thisQueryId = ++activeQueryId;
 
-            // Check IoT Commands
-            const lower = query.toLowerCase();
-            if (lower.includes("light on") || lower.includes("लाइट ऑन")) {
-                document.getElementById("iot_light").checked = true;
-                toggleIoT("Living Room Light", true);
-                queryInput.value = "";
-                return;
-            } else if (lower.includes("light off") || lower.includes("लाइट ऑफ")) {
-                document.getElementById("iot_light").checked = false;
-                toggleIoT("Living Room Light", false);
-                queryInput.value = "";
-                return;
-            }
-
-            outputBox.innerHTML = `⏳ <em>AMVIKA AI Processing...</em>`;
+            outputBox.innerHTML = `⏳ <em>AMVIKA AI Processing request...</em>`;
             scrollToSection('answerTabSection');
 
             const answerText = await fetchAIResponse(query);
 
-            // Cancel if another query was initiated in parallel
-            if (thisQueryId !== activeQueryId) return;
+            if (thisQueryId !== activeQueryId) return; // Prevent multiple out-of-order answers
 
             currentAnswerText = answerText;
             outputBox.innerText = answerText;
             
-            // Speak New Answer
             speakText(answerText);
-            
-            // Log History
             saveToHistory(query, answerText);
             queryInput.value = "";
         }
@@ -489,8 +405,8 @@
             container.innerHTML = userHistory.map(item => `
                 <div class="history-card">
                     <div class="history-time">⏱️ ${item.time}</div>
-                    <div class="history-req">❓ Task: "${item.req}"</div>
-                    <div class="history-res">💡 Answer: ${item.res.substring(0, 100)}...</div>
+                    <div class="history-req">❓ Query: "${item.req}"</div>
+                    <div class="history-res">💡 Answer: ${item.res.substring(0, 120)}...</div>
                 </div>
             `).join('');
         }
@@ -509,7 +425,7 @@
 
         function speakText(text) {
             if ('speechSynthesis' in window) {
-                stopSpeech(); // Cut previous speech immediately
+                stopSpeech();
                 const cleanText = text.replace(/[*#_~`]/g, '');
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = 'hi-IN';
@@ -517,14 +433,6 @@
                 utterance.pitch = 1.0;
                 window.speechSynthesis.speak(utterance);
             }
-        }
-
-        function toggleIoT(deviceName, status) {
-            stopSpeech();
-            const msg = `Smart Device ${deviceName} turned ${status ? 'ON' : 'OFF'}.`;
-            document.getElementById("responseStatusText").innerText = msg;
-            speakText(msg);
-            saveToHistory(`Command: Switch ${deviceName}`, msg);
         }
 
         function initVoiceRecognition() {
@@ -538,7 +446,7 @@
 
             recognition.onstart = () => {
                 isListening = true;
-                stopSpeech(); // Stop speech when mic starts listening
+                stopSpeech();
                 document.getElementById("micBtn").classList.add("active");
                 document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak now!";
             };
@@ -559,7 +467,7 @@
             if (e) e.stopPropagation();
             if (!recognition) initVoiceRecognition();
 
-            stopSpeech(); // Cut any ongoing AI speech immediately
+            stopSpeech();
             
             if (isListening) {
                 recognition.stop();
