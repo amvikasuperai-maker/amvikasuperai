@@ -11,37 +11,40 @@
     <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
     
     <style>
+        /* PURPLE-BLUE THEME COLOR PALETTE */
         :root {
-            --bg-dark: #090d16;
-            --sidebar-bg: #0f172a;
-            --card-bg: #1e293b;
-            --accent-blue: #38bdf8;
-            --accent-purple: #6366f1;
-            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --border-color: #334155;
-            --urgent-red: #ef4444;
+            --bg-dark: #0d0b21;               /* Deep Night Purple */
+            --sidebar-bg: #141133;           /* Dark Blue Violet */
+            --card-bg: #1d1847;              /* Deep Indigo Card */
+            --accent-blue: #38bdf8;          /* Cyan Blue Highlight */
+            --accent-purple: #a855f7;        /* Electric Purple */
+            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+            --text-main: #f3f4f6;            /* Soft White */
+            --text-sub: #a5b4fc;             /* Light Lavender Text */
+            --border-color: #312e81;         /* Deep Purple Border */
+            --urgent-red: #f43f5e;           /* Crimson Accent */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; position: relative; }
 
-        /* FIXED LOGIN OVERLAY STYLES */
+        /* PURPLE BLUE LOGIN OVERLAY */
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(9, 13, 22, 0.98); backdrop-filter: blur(12px);
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0d0b21 100%); 
+            backdrop-filter: blur(12px);
             display: flex; justify-content: center; align-items: center; z-index: 99999; padding: 15px;
         }
         .login-card {
             background: var(--card-bg); padding: 25px 20px; border-radius: 20px;
             width: 100%; max-width: 440px; border: 1px solid var(--border-color);
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            text-align: center; box-shadow: 0 20px 50px rgba(168, 85, 247, 0.15);
         }
         .company-logo { max-width: 150px; height: auto; margin-bottom: 12px; background: #ffffff; padding: 6px 10px; border-radius: 8px; display: inline-block; }
-        .amvika-avatar-sm { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-blue); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; }
+        .amvika-avatar-sm { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-purple); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
         .input-field, .select-field { width: 100%; padding: 12px 14px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 14px; outline: none; }
-        .btn-primary { width: 100%; padding: 14px; border-radius: 10px; border: none; background: var(--accent-gradient); color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .input-field:focus, .select-field:focus { border-color: var(--accent-purple); }
+        .btn-primary { width: 100%; padding: 14px; border-radius: 10px; border: none; background: var(--accent-gradient); color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
 
         .app-container { display: flex; min-height: 100vh; width: 100%; }
 
@@ -51,36 +54,37 @@
         .sidebar-brand h2 { font-size: 18px; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .nav-menu { list-style: none; }
         .nav-item { padding: 12px 16px; margin-bottom: 8px; border-radius: 10px; color: var(--text-sub); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; font-weight: 600; font-size: 14px; }
-        .nav-item.active, .nav-item:hover { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); }
+        .nav-item.active, .nav-item:hover { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.2); }
 
         .mobile-header { display: none; background: var(--sidebar-bg); padding: 12px 20px; border-bottom: 1px solid var(--border-color); align-items: center; justify-content: space-between; width: 100%; position: sticky; top: 0; z-index: 90; }
         .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 95; backdrop-filter: blur(4px); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(13, 11, 33, 0.8); z-index: 95; backdrop-filter: blur(4px); }
 
         .main-content { flex: 1; padding: 25px; overflow-y: auto; width: 100%; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .hero-banner { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 20px; padding: 20px; border: 1px solid rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; gap: 20px; }
+        .hero-banner { background: linear-gradient(135deg, #2e1065 0%, #311b92 50%, #1e1b4b 100%); border-radius: 20px; padding: 20px; border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; gap: 20px; box-shadow: 0 10px 30px rgba(13, 11, 33, 0.5); }
         .hero-text h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
-        .hero-avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--accent-blue); object-fit: cover; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+        .hero-avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--accent-purple); object-fit: cover; box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
 
         .search-voice-box { position: relative; margin-top: 15px; width: 100%; max-width: 580px; display: flex; gap: 8px; }
         .search-input { flex: 1; padding: 12px 16px; border-radius: 25px; border: 1px solid var(--border-color); background: var(--sidebar-bg); color: #fff; font-size: 14px; outline: none; }
+        .search-input:focus { border-color: var(--accent-purple); }
         .send-btn, .mic-btn { width: 44px; height: 44px; border-radius: 50%; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-        .send-btn { background: var(--accent-gradient); }
-        .mic-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--accent-blue); }
-        .mic-btn.active { background: #ef4444; color: #fff; animation: pulse 1.2s infinite; }
+        .send-btn { background: var(--accent-gradient); box-shadow: 0 0 10px rgba(168, 85, 247, 0.4); }
+        .mic-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--accent-purple); }
+        .mic-btn.active { background: #f43f5e; color: #fff; animation: pulse 1.2s infinite; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
-        .answer-tab { background: var(--sidebar-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--accent-blue); margin-bottom: 25px; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.1); }
+        .answer-tab { background: var(--sidebar-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--accent-purple); margin-bottom: 25px; box-shadow: 0 10px 25px rgba(168, 85, 247, 0.15); }
         .answer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
         .answer-content { font-size: 15px; line-height: 1.7; color: var(--text-main); white-space: pre-wrap; word-break: break-word; min-height: 60px; }
-        .speak-btn { background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; border-radius: 25px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .speak-btn { background: rgba(168, 85, 247, 0.2); border: 1px solid var(--accent-purple); color: #c084fc; padding: 6px 12px; border-radius: 25px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
 
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
         .action-card { background: var(--card-bg); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); transition: 0.3s; cursor: pointer; }
-        .action-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
-        .action-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+        .action-card:hover { border-color: var(--accent-purple); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(168, 85, 247, 0.2); }
+        .action-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(168, 85, 247, 0.15); color: #c084fc; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
 
         .two-column-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 25px; }
         .panel-box { background: var(--sidebar-bg); border-radius: 16px; padding: 18px; border: 1px solid var(--border-color); }
@@ -112,12 +116,12 @@
 </head>
 <body>
 
-    <!-- MANDATORY LOGIN OVERLAY -->
+    <!-- PURPLE BLUE LOGIN OVERLAY -->
     <div id="loginOverlay">
         <div class="login-card">
             <img src="logo.png" alt="Career Dekho" class="company-logo"><br>
             <img src="amvika-logo.jpg" alt="AMVIKA Logo" class="amvika-avatar-sm">
-            <h2 style="margin-bottom: 5px; font-size: 20px;">AMVIKA Super AI</h2>
+            <h2 style="margin-bottom: 5px; font-size: 20px; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AMVIKA Super AI</h2>
             <p style="color: var(--text-sub); font-size: 12px; margin-bottom: 16px;">Next-Gen Instant AI Workspace</p>
             
             <input type="email" id="emailInput" class="input-field" placeholder="Registered Email ID">
@@ -130,11 +134,11 @@
             </select>
 
             <button class="btn-primary" onclick="handleLogin()">Activate AMVIKA AI</button>
-            <p id="loginError" style="color:#ef4444; font-size:13px; margin-top:12px;"></p>
+            <p id="loginError" style="color:#f43f5e; font-size:13px; margin-top:12px;"></p>
         </div>
     </div>
 
-    <!-- MAIN APP STRUCTURE (HIDDEN UNTIL LOGIN) -->
+    <!-- MAIN APP STRUCTURE -->
     <div class="app-container hidden" id="mainAppContent">
         <aside class="sidebar" id="appSidebar">
             <div>
@@ -150,7 +154,7 @@
                 </ul>
             </div>
             
-            <div id="godModeBadge" class="hidden" style="background: rgba(239, 68, 68, 0.2); color:#f87171; padding:10px; border-radius:10px; font-size:12px; text-align:center; font-weight:bold;">
+            <div id="godModeBadge" class="hidden" style="background: rgba(244, 63, 94, 0.2); color:#f43f5e; padding:10px; border-radius:10px; font-size:12px; text-align:center; font-weight:bold; border: 1px solid #f43f5e;">
                 ⚡ GOD MODE ACTIVE
             </div>
         </aside>
@@ -161,7 +165,7 @@
             <header class="mobile-header">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
                 <span style="font-weight: 800; font-size: 16px; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AMVIKA AI</span>
-                <img src="amvika-logo.jpg" alt="Logo" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent-blue);">
+                <img src="amvika-logo.jpg" alt="Logo" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent-purple);">
             </header>
 
             <header class="top-bar">
@@ -195,7 +199,7 @@
                 <div class="answer-header">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <img src="amvika-logo.jpg" alt="AMVIKA" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
-                        <span style="font-weight:700; font-size:14px; color:var(--accent-blue);">AMVIKA Answer Board</span>
+                        <span style="font-weight:700; font-size:14px; color:#c084fc;">AMVIKA Answer Board</span>
                     </div>
                     <button class="speak-btn" onclick="readAnswerAloud()"><i class="fa-solid fa-volume-high"></i> Speak Answer</button>
                 </div>
@@ -209,7 +213,7 @@
             <div class="two-column-section" id="historySection">
                 <div class="panel-box" style="grid-column: span 2;">
                     <div class="panel-title">
-                        <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-blue);"></i> Activity History</span>
+                        <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-purple);"></i> Activity History</span>
                         <span style="font-size:11px; color:var(--urgent-red); cursor:pointer;" onclick="clearHistory()">Clear All</span>
                     </div>
                     <div class="history-list" id="historyContainer">
@@ -229,7 +233,7 @@
         // ⬇️ Paste your Groq Key here (gsk_...)
         const AI_API_KEY = "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";
 
-        let currentFingerprint = "";
+        let currentFingerprint = localStorage.getItem("amvika_device_fp") || "";
         let currentUserEmail = "Guest";
         let recognition = null;
         let isListening = false;
@@ -237,8 +241,12 @@
         let currentAnswerText = "";
         let activeQueryId = 0;
 
+        // Load or save permanent device ID
         FingerprintJS.load().then(fp => fp.get()).then(res => {
-            currentFingerprint = res.visitorId;
+            if (!currentFingerprint) {
+                currentFingerprint = res.visitorId;
+                localStorage.setItem("amvika_device_fp", currentFingerprint);
+            }
         });
 
         function toggleSidebar() {
@@ -298,7 +306,11 @@
                     return; 
                 }
 
-                if (!record.hwid_fingerprint || record.status === "UNUSED") {
+                // Device binding logic with fallback local check
+                const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint;
+
+                if (!record.hwid_fingerprint || record.status === "UNUSED" || record.hwid_fingerprint === "") {
+                    // First-time registration for this license
                     await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                         method: 'PATCH',
                         headers: { 
@@ -306,11 +318,12 @@
                             "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}`, 
                             "Content-Type": "application/json" 
                         },
-                        body: JSON.stringify({ hwid_fingerprint: currentFingerprint, status: "USED" })
+                        body: JSON.stringify({ hwid_fingerprint: savedFp, status: "USED" })
                     });
                     unlockApp("Device Activated", role);
                 } 
-                else if (record.hwid_fingerprint === currentFingerprint) {
+                else if (record.hwid_fingerprint === savedFp || record.hwid_fingerprint === currentFingerprint) {
+                    // Match found
                     unlockApp("Authorized User", role);
                 } 
                 else {
