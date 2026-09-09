@@ -174,7 +174,7 @@
         <section class="hero-banner">
             <div class="hero-text">
                 <h1 id="welcomeTitle">Hello! I'm AMVIKA</h1>
-                <p id="welcomeSub">Ask me anything — Leave Applications, Math, Coding, or Emails.</p>
+                <p id="welcomeSub">Ask me anything — Real-time AI answers instantly.</p>
                 
                 <div class="search-voice-box">
                     <input type="text" id="userQueryInput" class="search-input" placeholder="Type or speak any question..." onkeydown="if(event.key==='Enter') submitQuery()">
@@ -189,12 +189,12 @@
             <div class="answer-header">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="amvika-logo.jpg" alt="AMVIKA" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
-                    <span style="font-weight:700; font-size:14px; color:var(--accent-blue);">AMVIKA Answer Output</span>
+                    <span style="font-weight:700; font-size:14px; color:var(--accent-blue);">AMVIKA Real-time Output</span>
                 </div>
                 <button class="speak-btn" onclick="readAnswerAloud()"><i class="fa-solid fa-volume-high"></i> Speak Answer</button>
             </div>
             <div class="answer-content" id="responseStatusText">
-                AMVIKA AI Active! Kuchh bhi puchiye — Application, Math, Science, ya Code.
+                AMVIKA AI is Active! Type or speak your query above.
             </div>
         </section>
 
@@ -303,7 +303,7 @@
                 document.getElementById("welcomeTitle").innerText = "Hello! I'm AMVIKA (Study AI)";
                 document.getElementById("welcomeSub").innerText = "Ask math tables, leave applications, or science concepts.";
                 container.innerHTML = `
-                    <div class="action-card" onclick="quickPrompt('3 days leave application for school in English')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>3-Day Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Application Draft</p></div>
+                    <div class="action-card" onclick="quickPrompt('3 days leave application for school in Hindi')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>3-Day Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Application Draft</p></div>
                     <div class="action-card" onclick="quickPrompt('Photosynthesis definition in Hindi')"><div class="action-icon"><i class="fa-solid fa-leaf"></i></div><h4>Photosynthesis</h4><p style="font-size:12px; color:var(--text-sub);">Science Help</p></div>
                 `;
             } else if (mode === "Business") {
@@ -326,66 +326,49 @@
             submitQuery();
         }
 
-        // ADVANCED MULTILINGUAL INTENT & NLP ENGINE (Generates precise application/answers instantaneously)
-        function generateSmartMultilingualAnswer(q) {
-            const lower = q.toLowerCase();
+        // ULTRA-FAST MULTI-ENGINE REAL AI ROUTER (NO STATIC TEMPLATES)
+        async function fetchAIResponse(userPrompt) {
+            const prompt = `System Instructions: You are AMVIKA AI. Answer directly, clearly, and completely in the same language as the prompt (Hindi/Hinglish/English). Do NOT add preambles or generic intros. Give full answers.\n\nUser Question: ${userPrompt}`;
 
-            // 1. LEAVE APPLICATION DETECTION (Hindi, Devanagari & English Regex)
-            if (/leave|application| छुट्टी|छुट्टी|छूट्टी|आवेदन|फीवर|fever|sick|teacher|स्कूल|school|office|manager/i.test(q)) {
-                
-                // Smart Field Extraction
-                let name = "साक्षी";
-                let nameMatch = q.match(/(?:naam|name|नाम)\s*[:=]?\s*([A-Za-z\u0900-\u097F]+)/i);
-                if (nameMatch && nameMatch[1]) name = nameMatch[1];
-
-                let role = "Teacher";
-                if (/teacher|टीचर|अध्यापक/i.test(q)) role = "Teacher";
-                if (/student|छात्र|विद्यार्थी/i.test(q)) role = "Student";
-
-                let days = "3";
-                let dayMatch = q.match(/(\d+|एक|दो|तीन|चार|पांच|one|two|three|four|five)/i);
-                if (dayMatch) {
-                    const dMap = {"एक":"1", "दो":"2", "तीन":"3", "चार":"4", "पांच":"5", "one":"1", "two":"2", "three":"3"};
-                    days = dMap[dayMatch[1].toLowerCase()] || dayMatch[1];
-                }
-
-                let reason = "Fever / Unfavourable Health Condition";
-                if (/fever|फीवर|बुखार/i.test(q)) reason = "Fever (बुखार)";
-                if (/urgent|जरूरी|urgency/i.test(q)) reason = "Urgent Personal Work";
-
-                return `सेवा में,\nश्रीमान प्रधानाचार्य / मैनेजर महोदय,\nसेंट्रल स्कूल / संस्थान\n\nविषय: ${reason} के कारण ${days} दिनों के अवकाश हेतु आवेदन पत्र।\n\nआदरणीय महोदय/महोदया,\n\nसविनय निवेदन यह है कि मेरा नाम ${name} है और मैं आपके विद्यालय me ${role} के पद पर कार्यरत हूँ। मुझे अचानक तेज ${reason} हो जाने के कारण डॉक्टर ने मुझे ${days} दिनों तक विश्राम करने की सलाह दी है।\n\nइस कारणवश मैं दिनांक ${new Date().toLocaleDateString('hi-IN')} से आगामी ${days} दिनों तक अपने कर्तव्यों का पालन करने में असमर्थ रहूँगी।\n\nअतः आपसे नम्र निवेदन है कि मुझे ${days} दिनों का अवकाश प्रदान करने की कृपा करें। इसके लिए मैं सदैव आपकी आभारी रहूँगी।\n\nसधन्यवाद,\n\nभवदीया,\nनाम: ${name}\nपद: ${role}\nदिनांक: ${new Date().toLocaleDateString('hi-IN')}`;
-            }
-
-            // 2. MATH TABLES DETECTION
-            if (/table|पहाड़ा|2 ki table/i.test(q)) {
-                return "Multiplication Table of 2:\n\n2 x 1 = 2\n2 x 2 = 4\n2 x 3 = 6\n2 x 4 = 8\n2 x 5 = 10\n2 x 6 = 12\n2 x 7 = 14\n2 x 8 = 16\n2 x 9 = 18\n2 x 10 = 20";
-            }
-
-            // 3. GENERAL FALLBACK RESPONSE
-            return `उत्तर / Answer:\n\nआपके प्रश्न: "${q}" का उत्तर नीचे प्रस्तुत है:\n\nAMVIKA AI ने आपकी क्वेरी सफलतापूर्वक प्रोसेस कर ली है। यदि आपको इसमें कोई विशिष्ट बदलाव या विस्तृत जानकारी चाहिए तो कृपया पुनः स्पष्ट करें।`;
-        }
-
-        // HYBRID AI API CALL WITH IMMEDIATE INSTANT RESPONSE ENGINE
-        async function fetchAIResponse(query) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000); // Fast 2 sec API Limit
-
+            // Engine 1: Fast Direct API Stream
             try {
-                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent("Provide direct complete response without preambles: " + query)}`, {
-                    signal: controller.signal
+                const controller1 = new AbortController();
+                const timeout1 = setTimeout(() => controller1.abort(), 3500);
+
+                const res1 = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=openai&seed=${Math.floor(Math.random()*1000)}`, {
+                    signal: controller1.signal
                 });
-                clearTimeout(timeoutId);
-                if (response.ok) {
-                    const text = await response.text();
-                    if (text && text.trim().length > 15 && !text.includes("Processed your request")) {
+                clearTimeout(timeout1);
+
+                if (res1.ok) {
+                    const text = await res1.text();
+                    if (text && text.trim().length > 10 && !text.includes("Processed your request successfully")) {
                         return text.trim();
                     }
                 }
             } catch (e) {
-                console.log("Switching to fast local engine...");
+                console.warn("Engine 1 failed/timeout. Routing to Engine 2...");
             }
 
-            return generateSmartMultilingualAnswer(query);
+            // Engine 2: High Speed Alternate AI Router
+            try {
+                const controller2 = new AbortController();
+                const timeout2 = setTimeout(() => controller2.abort(), 4000);
+
+                const res2 = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=qwen`, {
+                    signal: controller2.signal
+                });
+                clearTimeout(timeout2);
+
+                if (res2.ok) {
+                    const text = await res2.text();
+                    if (text && text.trim().length > 10) return text.trim();
+                }
+            } catch (e) {
+                console.warn("Engine 2 failed. Routing to Backup System...");
+            }
+
+            return "⚠️ AI Service temporary busy. Please check your network connection or try re-submitting your question in a moment.";
         }
 
         async function submitQuery() {
@@ -400,7 +383,7 @@
 
             const thisQueryId = ++activeQueryId;
 
-            outputBox.innerText = "⚡ Generating answer...";
+            outputBox.innerText = "⚡ AMVIKA AI Thinking...";
             scrollToSection('answerTabSection');
 
             const answerText = await fetchAIResponse(query);
