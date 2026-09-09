@@ -230,11 +230,12 @@
 
     <script>
         <script>
-    // 🔑 Base64 Encoded Key (Protected from GitHub Auto-Revoke)
-    // REPLACE 'PASTE_YOUR_BASE64_TEXT_HERE' WITH YOUR ENCODED STRING FROM STEP 1
+    <script>
+    // 🔑 1. Base64 Key Insert Karein
     const ENCODED_OPENAI_KEY = "c2stb3ItdjEtMGIyYjliZDNhYzQ2ZTdhM2U2OTVhNWQ5NDUzYzg0MzBhZmI5YzMzNjI2NGExZjQ5NmYzMzQ4OTRmOWJlZWEyNQ==";
     const OPENAI_API_KEY = atob(ENCODED_OPENAI_KEY).trim();
 
+    // 🌐 2. Supabase & Credentials
     const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
     const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr";
     const GOD_EMAIL = "amvikasuperai@gmail.com";
@@ -248,58 +249,89 @@
     let currentAnswerText = "";
     let activeQueryId = 0;
 
-    FingerprintJS.load().then(fp => fp.get()).then(res => {
-        if (!currentFingerprint) {
-            currentFingerprint = res.visitorId;
-            localStorage.setItem("amvika_device_fp", currentFingerprint);
-        }
-    });
+    // Device Fingerprint Setup
+    if (typeof FingerprintJS !== "undefined") {
+        FingerprintJS.load().then(fp => fp.get()).then(res => {
+            if (!currentFingerprint) {
+                currentFingerprint = res.visitorId;
+                localStorage.setItem("amvika_device_fp", currentFingerprint);
+            }
+        }).catch(err => console.log("FP Load Error:", err));
+    }
 
     function toggleSidebar() {
-        document.getElementById("appSidebar").classList.toggle("open");
-        document.getElementById("sidebarOverlay").classList.toggle("active");
+        document.getElementById("appSidebar")?.classList.toggle("open");
+        document.getElementById("sidebarOverlay")?.classList.toggle("active");
     }
 
     function closeSidebar() {
-        document.getElementById("appSidebar").classList.remove("open");
-        document.getElementById("sidebarOverlay").classList.remove("active");
+        document.getElementById("appSidebar")?.classList.remove("open");
+        document.getElementById("sidebarOverlay")?.classList.remove("active");
     }
 
     function scrollToSection(id) {
-        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         if (window.innerWidth <= 850) closeSidebar();
     }
 
+    // 🔓 LOGIN SYSTEM FIX
     async function handleLogin() {
-        const email = document.getElementById("emailInput").value.trim().toLowerCase();
-        const key = document.getElementById("licenseInput").value.trim();
-        const role = document.getElementById("userRoleSelect").value;
+        const emailInput = document.getElementById("emailInput");
+        const licenseInput = document.getElementById("licenseInput");
+        const roleSelect = document.getElementById("userRoleSelect");
         const err = document.getElementById("loginError");
 
+        if (!emailInput || !licenseInput) return;
+
+        const email = emailInput.value.trim().toLowerCase();
+        const key = licenseInput.value.trim();
+        const role = roleSelect ? roleSelect.value : "Student";
+
         err.innerText = "";
-        if (!email || !key) { err.innerText = "Email and License Key required!"; return; }
+
+        if (!email || !key) { 
+            err.innerText = "⚠️ Email and License Key required!"; 
+            return; 
+        }
 
         currentUserEmail = email;
 
+        // God Mode Pass
         if (email === GOD_EMAIL.toLowerCase() || key === GOD_KEY) {
-            document.getElementById("godModeBadge").classList.remove("hidden");
+            const godBadge = document.getElementById("godModeBadge");
+            if (godBadge) godBadge.classList.remove("hidden");
             unlockApp("God Mode Active", role);
             return;
         }
 
+        // Supabase License Verify
         try {
+            err.innerText = "⌛ Verifying license...";
             const res = await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
-                headers: { "apikey": SUPABASE_API_KEY.trim(), "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` }
+                headers: { 
+                    "apikey": SUPABASE_API_KEY.trim(), 
+                    "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` 
+                }
             });
             
-            if (!res.ok) { err.innerText = "Database Access Error!"; return; }
+            if (!res.ok) { 
+                err.innerText = "⚠️ Database Access Error!"; 
+                return; 
+            }
+
             const data = await res.json();
-            if (!data || data.length === 0) { err.innerText = "Invalid License Key!"; return; }
+            if (!data || data.length === 0) { 
+                err.innerText = "⚠️ Invalid License Key!"; 
+                return; 
+            }
 
             const record = data[0];
-            if (record.customer_email.toLowerCase().trim() !== email) { err.innerText = "Email ID mismatch!"; return; }
+            if (record.customer_email.toLowerCase().trim() !== email) { 
+                err.innerText = "⚠️ Email ID mismatch!"; 
+                return; 
+            }
 
-            const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint;
+            const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint || "device-1";
 
             if (!record.hwid_fingerprint || record.status === "UNUSED" || record.hwid_fingerprint === "") {
                 await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
@@ -317,55 +349,71 @@
                 unlockApp("Authorized User", role);
             } 
             else {
-                err.innerText = "SECURITY ERROR: Key is locked to another device!";
+                err.innerText = "⚠️ Key is locked to another device!";
             }
         } catch (e) {
-            err.innerText = "Connection Error!";
+            console.error("Login Error:", e);
+            err.innerText = "⚠️ Network/Connection Error!";
         }
     }
 
     function unlockApp(statusTitle, selectedRole) {
-        document.getElementById("loginOverlay").classList.add("hidden");
-        document.getElementById("mainAppContent").classList.remove("hidden");
-        document.getElementById("userProfileLabel").innerText = "Persona: " + selectedRole;
-        document.getElementById("personaSelector").value = selectedRole;
+        document.getElementById("loginOverlay")?.classList.add("hidden");
+        document.getElementById("mainAppContent")?.classList.remove("hidden");
+        
+        const profileLabel = document.getElementById("userProfileLabel");
+        if (profileLabel) profileLabel.innerText = "Persona: " + selectedRole;
+        
+        const personaSel = document.getElementById("personaSelector");
+        if (personaSel) personaSel.value = selectedRole;
+
         switchPersonaMode(selectedRole);
         loadHistoryFromStorage();
     }
 
     function switchPersonaMode(mode) {
         const container = document.getElementById("personaCardsContainer");
+        const title = document.getElementById("welcomeTitle");
+        const sub = document.getElementById("welcomeSub");
+
         if (mode === "Student") {
-            document.getElementById("welcomeTitle").innerText = "Hello! I'm AMVIKA (Study AI)";
-            document.getElementById("welcomeSub").innerText = "Ask math tables, leave applications, or science concepts.";
-            container.innerHTML = `
-                <div class="action-card" onclick="quickPrompt('3 din ki chutti ki application hindi me likho')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>3-Day Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Application Draft</p></div>
-                <div class="action-card" onclick="quickPrompt('Photosynthesis kya hai hindi me samjhao')"><div class="action-icon"><i class="fa-solid fa-leaf"></i></div><h4>Photosynthesis</h4><p style="font-size:12px; color:var(--text-sub);">Science Help</p></div>
-            `;
+            if (title) title.innerText = "Hello! I'm AMVIKA (Study AI)";
+            if (sub) sub.innerText = "Ask math tables, leave applications, or science concepts.";
+            if (container) {
+                container.innerHTML = `
+                    <div class="action-card" onclick="quickPrompt('3 din ki chutti ki application hindi me likho')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>3-Day Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Application Draft</p></div>
+                    <div class="action-card" onclick="quickPrompt('Photosynthesis kya hai hindi me samjhao')"><div class="action-icon"><i class="fa-solid fa-leaf"></i></div><h4>Photosynthesis</h4><p style="font-size:12px; color:var(--text-sub);">Science Help</p></div>
+                `;
+            }
         } else if (mode === "Business") {
-            document.getElementById("welcomeTitle").innerText = "Welcome Boss! (Business Mode)";
-            document.getElementById("welcomeSub").innerText = "Ask for sales pitch, follow-up emails, or marketing tips.";
-            container.innerHTML = `
-                <div class="action-card" onclick="quickPrompt('Write sales pitch email for client')"><div class="action-icon"><i class="fa-solid fa-chart-line"></i></div><h4>Sales Pitch</h4><p style="font-size:12px; color:var(--text-sub);">Email Template</p></div>
-            `;
+            if (title) title.innerText = "Welcome Boss! (Business Mode)";
+            if (sub) sub.innerText = "Ask for sales pitch, follow-up emails, or marketing tips.";
+            if (container) {
+                container.innerHTML = `
+                    <div class="action-card" onclick="quickPrompt('Write sales pitch email for client')"><div class="action-icon"><i class="fa-solid fa-chart-line"></i></div><h4>Sales Pitch</h4><p style="font-size:12px; color:var(--text-sub);">Email Template</p></div>
+                `;
+            }
         } else {
-            document.getElementById("welcomeTitle").innerText = "Hello! (Work Assistant)";
-            document.getElementById("welcomeSub").innerText = "Draft leave applications, job emails, resume bullet points.";
-            container.innerHTML = `
-                <div class="action-card" onclick="quickPrompt('3 din ki chutti ke liye office manager ko application')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>Office Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Professional Draft</p></div>
-            `;
+            if (title) title.innerText = "Hello! (Work Assistant)";
+            if (sub) sub.innerText = "Draft leave applications, job emails, resume bullet points.";
+            if (container) {
+                container.innerHTML = `
+                    <div class="action-card" onclick="quickPrompt('3 din ki chutti ke liye office manager ko application')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>Office Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Professional Draft</p></div>
+                `;
+            }
         }
     }
 
     function quickPrompt(text) {
-        document.getElementById("userQueryInput").value = text;
+        const input = document.getElementById("userQueryInput");
+        if (input) input.value = text;
         submitQuery();
     }
 
-    // ⚡ DIRECT OPENAI FETCH (FAST & RELIABLE)
+    // 🤖 AI RESPONSE FETCH (OPENAI)
     async function fetchAIResponse(userPrompt) {
         if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("PASTE_YOUR_BASE64")) {
-            return "⚠️ OpenAI API Key Missing: Please paste your Base64 Encoded Key.";
+            return "⚠️ OpenAI Key Missing: Base64 Key update karein.";
         }
 
         try {
@@ -388,19 +436,18 @@
             const data = await response.json();
 
             if (!response.ok) {
-                console.error("OpenAI Error:", data);
-                return `⚠️ OpenAI Error (${response.status}): ${data.error?.message || "Check API key or billing limits."}`;
+                return `⚠️ OpenAI Error (${response.status}): ${data.error?.message || "Check billing/key"}`;
             }
 
-            return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
+            return data.choices[0]?.message?.content?.trim() || "⚠️ No response generated.";
         } catch (e) {
-            console.error("Network Error:", e);
             return "⚠️ Network Error: Unable to connect to OpenAI.";
         }
     }
 
     async function submitQuery() {
         const queryInput = document.getElementById("userQueryInput");
+        if (!queryInput) return;
         const query = queryInput.value.trim();
         const outputBox = document.getElementById("responseStatusText");
 
@@ -410,7 +457,7 @@
         if (recognition && isListening) recognition.stop();
 
         const thisQueryId = ++activeQueryId;
-        outputBox.innerText = "⚡ AMVIKA AI processing...";
+        if (outputBox) outputBox.innerText = "⚡ AMVIKA AI processing...";
         scrollToSection('answerTabSection');
 
         const answerText = await fetchAIResponse(query);
@@ -418,7 +465,7 @@
         if (thisQueryId !== activeQueryId) return;
 
         currentAnswerText = answerText;
-        outputBox.innerText = answerText;
+        if (outputBox) outputBox.innerText = answerText;
         
         speakText(answerText);
         saveToHistory(query, answerText);
@@ -450,6 +497,8 @@
 
     function renderHistory() {
         const container = document.getElementById("historyContainer");
+        if (!container) return;
+
         if (userHistory.length === 0) {
             container.innerHTML = `<p style="color:var(--text-sub); font-size:12px;">No activity logged yet.</p>`;
             return;
@@ -500,19 +549,21 @@
         recognition.onstart = () => {
             isListening = true;
             stopSpeech();
-            document.getElementById("micBtn").classList.add("active");
-            document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak now!";
+            document.getElementById("micBtn")?.classList.add("active");
+            const status = document.getElementById("responseStatusText");
+            if (status) status.innerText = "🎙️ Listening... Speak now!";
         };
 
         recognition.onresult = (e) => {
             const text = e.results[0][0].transcript;
-            document.getElementById("userQueryInput").value = text;
+            const input = document.getElementById("userQueryInput");
+            if (input) input.value = text;
             submitQuery();
         };
 
         recognition.onend = () => {
             isListening = false;
-            document.getElementById("micBtn").classList.remove("active");
+            document.getElementById("micBtn")?.classList.remove("active");
         };
     }
 
@@ -527,6 +578,7 @@
             recognition.start();
         }
     }
+</script>
 </script>
         function unlockApp(statusTitle, selectedRole) {
             document.getElementById("loginOverlay").classList.add("hidden");
