@@ -249,7 +249,6 @@
             if (window.innerWidth <= 850) closeSidebar();
         }
 
-        // FULL SUPABASE DATABASE AUTHENTICATION & DEVICE LOCK SYSTEM
         async function handleLogin() {
             const email = document.getElementById("emailInput").value.trim().toLowerCase();
             const key = document.getElementById("licenseInput").value.trim();
@@ -260,14 +259,12 @@
 
             currentUserEmail = email;
 
-            // 1. GOD MODE VERIFICATION
             if (email === GOD_EMAIL.toLowerCase() || key === GOD_KEY) {
                 document.getElementById("godModeBadge").classList.remove("hidden");
                 unlockApp("God Mode Active", role);
                 return;
             }
 
-            // 2. LIVE SUPABASE DB LICENSE VERIFICATION
             try {
                 const res = await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                     headers: { "apikey": SUPABASE_API_KEY.trim(), "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` }
@@ -288,11 +285,10 @@
                 const record = data[0];
                 
                 if (record.customer_email.toLowerCase().trim() !== email) { 
-                    err.innerText = "Email ID mismatch for this license!"; 
+                    err.innerText = "Email ID mismatch!"; 
                     return; 
                 }
 
-                // First time activation (Device Lock)
                 if (!record.hwid_fingerprint || record.status === "UNUSED") {
                     await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                         method: 'PATCH',
@@ -303,19 +299,16 @@
                         },
                         body: JSON.stringify({ hwid_fingerprint: currentFingerprint, status: "USED" })
                     });
-                    unlockApp("Device Activated Successfully", role);
+                    unlockApp("Device Activated", role);
                 } 
-                // Matching device login
                 else if (record.hwid_fingerprint === currentFingerprint) {
-                    unlockApp("Authorized Device Login", role);
+                    unlockApp("Authorized User", role);
                 } 
-                // Locked to another device
                 else {
-                    err.innerText = "SECURITY LOCK: License is bound to another device!";
+                    err.innerText = "SECURITY ERROR: Key is locked to another device!";
                 }
             } catch (e) {
-                console.error(e);
-                err.innerText = "Network Error during verification!";
+                err.innerText = "Connection Error!";
             }
         }
 
@@ -356,10 +349,10 @@
             submitQuery();
         }
 
-        // HIGH ACCURACY & SPEED GROQ ENGINE (llama3-70b-8192)
+        // FAST & ACCURATE GROQ ENGINE (llama-3.1-8b-instant)
         async function fetchAIResponse(userPrompt) {
             const cleanKey = AI_API_KEY.trim();
-            if (!cleanKey || cleanKey.includes("paste your Groq Key here")) {
+            if (!cleanKey || cleanKey.includes("PASTE_YOUR_GROQ_KEY_HERE")) {
                 return "⚠️ API Key Missing: Please paste your Groq Key (gsk_...) in Line 188.";
             }
 
@@ -371,9 +364,9 @@
                         "Authorization": `Bearer ${cleanKey}`
                     },
                     body: JSON.stringify({
-                        model: "llama3-70b-8192",
+                        model: "llama-3.1-8b-instant",
                         messages: [
-                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and accurately in the user's input language (Hindi, Hinglish, or English)." },
+                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language (Hindi, Hinglish, or English)." },
                             { role: "user", content: userPrompt }
                         ]
                     })
@@ -387,7 +380,7 @@
                 const data = await response.json();
                 return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
             } catch (e) {
-                return "⚠️ Network Error! Unable to connect to AI server.";
+                return "⚠️ Network Error with AI API.";
             }
         }
 
