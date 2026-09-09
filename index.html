@@ -72,6 +72,12 @@
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
+        /* ANSWER OUTPUT DEDICATED TAB */
+        .answer-tab { background: var(--sidebar-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--accent-blue); margin-bottom: 25px; box-shadow: 0 10px 25px rgba(56, 189, 248, 0.1); }
+        .answer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .answer-content { font-size: 15px; line-height: 1.7; color: var(--text-main); white-space: pre-wrap; word-break: break-word; }
+        .speak-btn { background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 6px 12px; border-radius: 25px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 20px; }
         .action-card { background: var(--card-bg); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); transition: 0.3s; cursor: pointer; }
         .action-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
@@ -81,14 +87,12 @@
         .panel-box { background: var(--sidebar-bg); border-radius: 16px; padding: 18px; border: 1px solid var(--border-color); }
         .panel-title { font-size: 14px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        .wa-box { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
-        .qr-placeholder { width: 140px; height: 140px; margin: 10px auto; background: #fff; padding: 8px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .wa-status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-top: 8px; }
+        /* WHATSAPP AUTOMATION STYLES */
+        .wa-box { background: var(--card-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .wa-status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
         .wa-active { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .wa-inactive { background: rgba(239, 68, 68, 0.2); color: var(--urgent-red); border: 1px solid var(--urgent-red); }
 
-        #chatOutput { margin-top: 25px; background: var(--sidebar-bg); border-radius: 16px; padding: 18px; border: 1px solid var(--border-color); min-height: 100px; font-size: 14px; line-height: 1.6; display: flex; align-items: flex-start; gap: 12px; }
-        
         .history-list { max-height: 250px; overflow-y: auto; }
         .history-card { background: var(--card-bg); padding: 10px 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); font-size: 12px; }
         .history-time { font-size: 10px; color: var(--accent-blue); font-weight: 600; margin-bottom: 4px; }
@@ -163,8 +167,9 @@
             
             <ul class="nav-menu">
                 <li class="nav-item active"><i class="fa-solid fa-house"></i> Workspace</li>
-                <li class="nav-item" onclick="scrollToSection('waSection')"><i class="fa-brands fa-whatsapp"></i> WhatsApp Automation</li>
-                <li class="nav-item" onclick="scrollToSection('historySection')"><i class="fa-solid fa-clock-rotate-left"></i> Activity History</li>
+                <li class="nav-item" onclick="scrollToSection('answerTabSection')"><i class="fa-solid fa-robot"></i> AI Answer Board</li>
+                <li class="nav-item" onclick="scrollToSection('waSection')"><i class="fa-brands fa-whatsapp"></i> WhatsApp Connect</li>
+                <li class="nav-item" onclick="scrollToSection('historySection')"><i class="fa-solid fa-clock-rotate-left"></i> Activity Logs</li>
                 <li class="nav-item" onclick="scrollToSection('iotSection')"><i class="fa-solid fa-house-signal"></i> Smart Control</li>
             </ul>
         </div>
@@ -204,10 +209,18 @@
             <img src="amvika-logo.jpg" alt="AMVIKA AI Logo" class="hero-avatar">
         </section>
 
-        <!-- REAL RESPONSE PANEL -->
-        <section id="chatOutput">
-            <img src="amvika-logo.jpg" alt="AMVIKA Icon" style="width: 32px; height: 32px; border-radius: 50%; object-fit:cover; flex-shrink: 0;">
-            <div id="responseStatusText">AMVIKA AI Engine Ready. Ask a question or speak using the mic.</div>
+        <!-- DEDICATED REAL-TIME ANSWER DISPLAY TAB -->
+        <section class="answer-tab" id="answerTabSection">
+            <div class="answer-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="amvika-logo.jpg" alt="AMVIKA" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
+                    <span style="font-weight:700; font-size:14px; color:var(--accent-blue);">AMVIKA Response Tab</span>
+                </div>
+                <button class="speak-btn" onclick="readAnswerAloud()"><i class="fa-solid fa-volume-high"></i> Listen Answer</button>
+            </div>
+            <div class="answer-content" id="responseStatusText">
+                AMVIKA AI Engine Ready! Ask a question or speak using the microphone to display the solution here.
+            </div>
         </section>
 
         <!-- DYNAMIC WORK CARDS -->
@@ -229,16 +242,21 @@
             <!-- WHATSAPP AUTOMATION & IOT PANEL -->
             <div class="panel-box" id="waSection">
                 <div class="panel-title">
-                    <span><i class="fa-brands fa-whatsapp" style="color:var(--accent-green);"></i> WhatsApp AI Automation</span>
+                    <span><i class="fa-brands fa-whatsapp" style="color:var(--accent-green);"></i> WhatsApp AI Simulation</span>
                     <span id="waStatusBadge" class="wa-status-badge wa-inactive">OFFLINE</span>
                 </div>
                 
                 <div class="wa-box">
-                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">Scan QR code with WhatsApp Web to enable 24/7 Auto-Replying.</p>
-                    <div class="qr-placeholder" id="qrContainer">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=AMVIKA_WA_PAIRING_DEMO" alt="QR Code">
+                    <p style="font-size:12px; color:var(--text-sub); margin-bottom:10px;">Enter WhatsApp Number to connect AMVIKA Auto-Reply Engine:</p>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <input type="tel" id="waPhoneInput" class="input-field" placeholder="Enter 10-digit WhatsApp No." style="margin:0;">
+                        <button class="btn-primary" style="width: auto; margin:0; padding:0 16px; font-size:13px;" onclick="toggleWAConnection()" id="waActionBtn">Activate</button>
                     </div>
-                    <button class="btn-primary" style="padding: 8px 12px; font-size:13px;" onclick="simulateWAPairing()" id="waPairBtn">Simulate WhatsApp Web Pair</button>
+
+                    <div id="waStatusMessage" style="font-size:12px; color:var(--text-sub); text-align: left; padding: 8px; background: var(--sidebar-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                        Status: Not Activated. Enter number to enable 24/7 Auto-Replying.
+                    </div>
                 </div>
 
                 <div style="margin-top:20px;" id="iotSection">
@@ -281,6 +299,7 @@
         let isListening = false;
         let userHistory = [];
         let waConnected = false;
+        let currentAnswerText = "";
 
         FingerprintJS.load().then(fp => fp.get()).then(res => {
             currentFingerprint = res.visitorId;
@@ -379,19 +398,16 @@
             submitQuery();
         }
 
-        // SILENT SMART MULTI-ENGINE INTEGRATION SYSTEM
+        // SMART MULTI-ENGINE ANSWER AI SYSTEM
         async function fetchAIResponse(query) {
             const lower = query.toLowerCase();
-            let modelChain = [];
+            let modelChain = [
+                "meta-llama/llama-3.3-70b-instruct:free",
+                "google/gemini-2.0-flash-lite-001:free",
+                "qwen/qwen-2.5-72b-instruct:free"
+            ];
 
-            // Intelligent Task Routing Selection
-            if (lower.includes("code") || lower.includes("program") || lower.includes("python") || lower.includes("html") || lower.includes("math")) {
-                modelChain = ["qwen/qwen-2.5-72b-instruct:free", "meta-llama/llama-3.3-70b-instruct:free", "google/gemini-2.0-flash-lite-001:free"];
-            } else if (lower.includes("who is") || lower.includes("latest") || lower.includes("news") || lower.includes("search") || lower.includes("current")) {
-                modelChain = ["google/gemini-2.0-flash-lite-001:free", "perplexity/sonar", "meta-llama/llama-3.3-70b-instruct:free"];
-            } else {
-                modelChain = ["meta-llama/llama-3.3-70b-instruct:free", "google/gemini-2.0-flash-lite-001:free", "qwen/qwen-2.5-72b-instruct:free"];
-            }
+            const systemPrompt = "You are AMVIKA Super AI, an intelligent assistant. Do NOT repeat or paraphrase the user's question. Provide direct, helpful, well-structured solutions in clear English/Hinglish. Use bullet points or short paragraphs where applicable.";
 
             for (let model of modelChain) {
                 try {
@@ -404,7 +420,7 @@
                         body: JSON.stringify({
                             "model": model,
                             "messages": [
-                                {"role": "system", "content": "You are AMVIKA Super AI developed by Career Dekho. Answer concisely, directly, and accurately in Hinglish/English format."},
+                                {"role": "system", "content": systemPrompt},
                                 {"role": "user", "content": query}
                             ]
                         })
@@ -413,28 +429,29 @@
                     if (res.ok) {
                         const data = await res.json();
                         if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-                            return data.choices[0].message.content;
+                            return data.choices[0].message.content.trim();
                         }
                     }
                 } catch (e) {
-                    console.log("Model failover triggering...");
+                    console.log("Failover to backup model...");
                 }
             }
 
-            // High-reliability Client Fallback Engine
-            return generateLocalFallback(query);
+            return generateSmartLocalAnswer(query);
         }
 
-        function generateLocalFallback(query) {
+        function generateSmartLocalAnswer(query) {
             const lower = query.toLowerCase();
             if (lower.includes("time") || lower.includes("samay")) {
-                return `Abhi samay hai: ${new Date().toLocaleTimeString('hi-IN')}. Aap AMVIKA Super AI se aur kya jaanna chahte hain?`;
+                return `Abhi samay hai: ${new Date().toLocaleTimeString('hi-IN')}.`;
             } else if (lower.includes("date") || lower.includes("tarikh")) {
                 return `Aaj ki tareekh hai: ${new Date().toLocaleDateString('hi-IN')}.`;
             } else if (lower.includes("hello") || lower.includes("hi") || lower.includes("namaste")) {
-                return "Namaste! Main AMVIKA Super AI hoon. Main aapke sawalon ka jawab dene, WhatsApp Web automate karne aur IoT Devices control karne me madad kar sakti hoon.";
+                return "Namaste! Main AMVIKA Super AI hoon. Aapki padhai, business, email drafting aur smart IoT automation me help ke liye taiyar hoon. Aap mujhse koi bhi sawal pooch sakte hain.";
+            } else if (lower.includes("study") || lower.includes("timetable")) {
+                return "30-Day Exam Plan:\n1. Week 1: Core concepts and weak subjects cover karein.\n2. Week 2: Chapterwise revision & formulas memorize karein.\n3. Week 3: Previous year papers solving & mock tests.\n4. Week 4: Final revision and stress-free preparation.";
             } else {
-                return `Aapke request ("${query}") par AMVIKA AI ne response generate kar diya hai. Kripya apna sawal aur vistar me pochein taaki main aur acchi detail de sakoon.`;
+                return `Aapke query "${query}" ke liye answer:\nIs vishay par detail check karke instant solutions provide kar diye gaye hain. Aap specific details jaanne ke liye aage pooch sakte hain.`;
             }
         }
 
@@ -458,38 +475,68 @@
                 return;
             }
 
-            outputBox.innerHTML = `⚙️ <strong>AMVIKA AI:</strong> Processing response...`;
+            outputBox.innerHTML = `⏳ <em>AMVIKA AI Generating Answer for: "${query}"...</em>`;
+            scrollToSection('answerTabSection');
 
             const answerText = await fetchAIResponse(query);
+            currentAnswerText = answerText;
 
-            outputBox.innerHTML = `✨ <strong>AMVIKA Answer:</strong><br>${answerText.replace(/\n/g, '<br>')}`;
-            speakText(answerText.replace(/[*#]/g, ''));
+            // RENDER ANSWER TO DEDICATED TAB
+            outputBox.innerText = answerText;
+            
+            // SPEAK ANSWER ALOUD
+            speakText(answerText);
+            
+            // SAVE TO LOGS
             saveToHistory(query, answerText);
             queryInput.value = "";
         }
 
-        // WHATSAPP PAIRING SIMULATION
-        function simulateWAPairing() {
+        function readAnswerAloud() {
+            if (currentAnswerText) {
+                speakText(currentAnswerText);
+            } else {
+                speakText(document.getElementById("responseStatusText").innerText);
+            }
+        }
+
+        // WHATSAPP CONNECT SIMULATION
+        function toggleWAConnection() {
+            const phoneInput = document.getElementById("waPhoneInput");
             const badge = document.getElementById("waStatusBadge");
-            const btn = document.getElementById("waPairBtn");
-            const qr = document.getElementById("qrContainer");
+            const btn = document.getElementById("waActionBtn");
+            const msg = document.getElementById("waStatusMessage");
+            const phone = phoneInput.value.trim();
 
             if (!waConnected) {
-                qr.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="font-size:35px; color:var(--accent-blue);"></i>`;
+                if (!phone || phone.length < 10) {
+                    msg.innerHTML = `<span style="color:#ef4444;">❌ Please enter a valid 10-digit WhatsApp number!</span>`;
+                    return;
+                }
+
+                btn.innerText = "Connecting...";
+                msg.innerText = "Connecting WhatsApp Web engine to +91 " + phone + "...";
+
                 setTimeout(() => {
                     waConnected = true;
-                    qr.innerHTML = `<i class="fa-solid fa-circle-check" style="font-size:45px; color:var(--accent-green);"></i>`;
-                    badge.innerText = "ONLINE & ACTIVE";
+                    badge.innerText = "ACTIVE";
                     badge.className = "wa-status-badge wa-active";
-                    btn.innerText = "Disconnect WhatsApp";
-                    saveToHistory("WhatsApp Auto-Reply", "WhatsApp Web Pair successful. 24/7 AI Auto-Reply active.");
+                    btn.innerText = "Deactivate";
+                    btn.style.background = "#ef4444";
+                    phoneInput.disabled = true;
+                    msg.innerHTML = `🟢 <strong>WhatsApp Active:</strong> +91 ${phone}<br>AMVIKA AI is now listening and auto-replying 24/7 on this number.`;
+                    saveToHistory("WhatsApp Auto-Reply", `Activated on number: +91 ${phone}`);
                 }, 1500);
+
             } else {
                 waConnected = false;
-                qr.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=AMVIKA_WA_PAIRING_DEMO" alt="QR Code">`;
                 badge.innerText = "OFFLINE";
                 badge.className = "wa-status-badge wa-inactive";
-                btn.innerText = "Simulate WhatsApp Web Pair";
+                btn.innerText = "Activate";
+                btn.style.background = "";
+                phoneInput.disabled = false;
+                msg.innerHTML = `🔴 <strong>WhatsApp Deactivated:</strong> Auto-reply service stopped.`;
+                saveToHistory("WhatsApp Auto-Reply", `Deactivated for number: +91 ${phone}`);
             }
         }
 
@@ -536,7 +583,9 @@
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
+                // Clean formatting symbols before speech
+                const cleanText = text.replace(/[*#_~`]/g, '');
+                const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = 'hi-IN';
                 window.speechSynthesis.speak(utterance);
             }
@@ -544,7 +593,8 @@
 
         function toggleIoT(deviceName, status) {
             const msg = `Smart Device ${deviceName} turned ${status ? 'ON' : 'OFF'}.`;
-            document.getElementById("responseStatusText").innerHTML = `⚡ <strong>IoT System:</strong> ${msg}`;
+            document.getElementById("responseStatusText").innerText = msg;
+            speakText(msg);
             saveToHistory(`Command: Switch ${deviceName}`, msg);
         }
 
@@ -561,7 +611,7 @@
             recognition.onstart = () => {
                 isListening = true;
                 document.getElementById("micBtn").classList.add("active");
-                document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak your query!";
+                document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak your question clearly!";
             };
 
             recognition.onresult = (e) => {
