@@ -45,8 +45,8 @@
             padding: 8px 12px; border-radius: 10px; display: inline-block;
         }
         .amvika-avatar-sm {
-            width: 50px; height: 50px; border-radius: 50%; object-fit: cover;
-            border: 2px solid var(--accent-blue); margin-bottom: 10px;
+            width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--accent-blue); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;
         }
         .input-field {
             width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px;
@@ -124,7 +124,7 @@
             <!-- CAREER DEKHO LOGO -->
             <img src="logo.png" alt="Career Dekho" class="company-logo"><br>
             <!-- AMVIKA LOGO AVATAR -->
-            <img src="30x40=1oneve - Copy.jpg" alt="AMVIKA Logo" class="amvika-avatar-sm">
+            <img src="amvika-logo.jpg" alt="AMVIKA Logo" class="amvika-avatar-sm">
             <h2 style="margin-bottom: 5px;">AMVIKA Super AI</h2>
             <p style="color: var(--text-sub); font-size: 13px; margin-bottom: 25px;">Enter credentials to activate assistant</p>
             
@@ -188,7 +188,7 @@
                     <button class="mic-btn" onclick="startVoiceInput()"><i class="fa-solid fa-microphone"></i></button>
                 </div>
             </div>
-            <img src="30x40=1oneve - Copy.jpg" alt="AMVIKA AI Logo" class="hero-avatar">
+            <img src="amvika-logo.jpg" alt="AMVIKA AI Logo" class="hero-avatar">
         </section>
 
         <!-- DYNAMIC CARDS -->
@@ -196,15 +196,15 @@
 
         <!-- RESPONSE DISPLAY WITH AVATAR -->
         <section id="chatOutput">
-            <img src="30x40=1oneve - Copy.jpg" alt="AMVIKA Icon" style="width: 35px; height: 35px; border-radius: 50%;">
+            <img src="amvika-logo.jpg" alt="AMVIKA Icon" style="width: 35px; height: 35px; border-radius: 50%;">
             <span id="responseStatusText">AMVIKA AI is active. Speak or type your query above.</span>
         </section>
     </main>
 
     <script>
-        // REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS IN PRODUCTION
-        const SUPABASE_URL = "https://YOUR_ACTUAL_PROJECT_REF.supabase.co/rest/v1/licenses";
-        const SUPABASE_API_KEY = "YOUR_ACTUAL_SUPABASE_ANON_KEY";
+        // SUPABASE CONFIGURATION
+        const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
+        const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr"; // <--- PASTE YOUR KEY HERE
         
         const GOD_EMAIL = "amvikasuperai@gmail.com";
         const GOD_KEY = "AMVIKA-SUPER-GOD-MODE-UNLIMITED-999";
@@ -233,20 +233,24 @@
             // Customer Verification
             try {
                 const res = await fetch(`${SUPABASE_URL}?license_key=eq.${key}`, {
-                    headers: { "apikey": SUPABASE_API_KEY, "Authorization": `Bearer ${SUPABASE_API_KEY}` }
+                    headers: { 
+                        "apikey": SUPABASE_API_KEY.trim(), 
+                        "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` 
+                    }
                 });
                 const data = await res.json();
 
                 if (!data || data.length === 0) { err.innerText = "Invalid License Key!"; return; }
                 
                 const record = data[0];
-                if (record.customer_email !== email) { err.innerText = "Email ID mismatch!"; return; }
+                if (record.customer_email.toLowerCase().trim() !== email) { err.innerText = "Email ID mismatch!"; return; }
 
                 if (!record.hwid_fingerprint && record.status === "UNUSED") {
                     await fetch(`${SUPABASE_URL}?license_key=eq.${key}`, {
                         method: 'PATCH',
                         headers: { 
-                            "apikey": SUPABASE_API_KEY, "Authorization": `Bearer ${SUPABASE_API_KEY}`,
+                            "apikey": SUPABASE_API_KEY.trim(), 
+                            "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}`,
                             "Content-Type": "application/json"
                         },
                         body: JSON.stringify({ hwid_fingerprint: currentFingerprint, status: "USED" })
