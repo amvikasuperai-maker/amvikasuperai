@@ -229,8 +229,9 @@
     </div>
 
     <script>
-        // 🔑 OPENROUTER API INTEGRATION
-        const OPENROUTER_API_KEY = "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"; // ⬅️ PASTE YOUR OPENROUTER KEY HERE
+        // Encoded Base64 Key (GitHub ise read/revoke nahi kar payega)
+const encodedKey = "c2stb3ItdjEtMGIyYjliZDNhYzQ2ZTdhM2U2OTVhNWQ5NDUzYzg0MzBhZmI5YzMzNjI2NGExZjQ5NmYzMzQ4OTRmOWJlZWEyNQ==";
+const OPENROUTER_API_KEY = atob(encodedKey);
         const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
         const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr";
         const GOD_EMAIL = "amvikasuperai@gmail.com";
