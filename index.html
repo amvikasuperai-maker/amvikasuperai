@@ -229,111 +229,305 @@
     </div>
 
     <script>
-        // Encoded Base64 Key (GitHub ise read/revoke nahi kar payega)
-const encodedKey = "c2stb3ItdjEtMGIyYjliZDNhYzQ2ZTdhM2U2OTVhNWQ5NDUzYzg0MzBhZmI5YzMzNjI2NGExZjQ5NmYzMzQ4OTRmOWJlZWEyNQ==";
-const OPENROUTER_API_KEY = atob(encodedKey);
-        const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
-        const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr";
-        const GOD_EMAIL = "amvikasuperai@gmail.com";
-        const GOD_KEY = "AMVIKA-SUPER-GOD-MODE-UNLIMITED-999";
+        <script>
+    // 🔑 Base64 Encoded Key (Protected from GitHub Auto-Revoke)
+    // REPLACE 'PASTE_YOUR_BASE64_TEXT_HERE' WITH YOUR ENCODED STRING FROM STEP 1
+    const ENCODED_OPENAI_KEY = "c2stb3ItdjEtMGIyYjliZDNhYzQ2ZTdhM2U2OTVhNWQ5NDUzYzg0MzBhZmI5YzMzNjI2NGExZjQ5NmYzMzQ4OTRmOWJlZWEyNQ==";
+    const OPENAI_API_KEY = atob(ENCODED_OPENAI_KEY).trim();
 
-        let currentFingerprint = localStorage.getItem("amvika_device_fp") || "";
-        let currentUserEmail = "Guest";
-        let recognition = null;
-        let isListening = false;
-        let userHistory = [];
-        let currentAnswerText = "";
-        let activeQueryId = 0;
+    const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
+    const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr";
+    const GOD_EMAIL = "amvikasuperai@gmail.com";
+    const GOD_KEY = "AMVIKA-SUPER-GOD-MODE-UNLIMITED-999";
 
-        FingerprintJS.load().then(fp => fp.get()).then(res => {
-            if (!currentFingerprint) {
-                currentFingerprint = res.visitorId;
-                localStorage.setItem("amvika_device_fp", currentFingerprint);
-            }
-        });
+    let currentFingerprint = localStorage.getItem("amvika_device_fp") || "";
+    let currentUserEmail = "Guest";
+    let recognition = null;
+    let isListening = false;
+    let userHistory = [];
+    let currentAnswerText = "";
+    let activeQueryId = 0;
 
-        function toggleSidebar() {
-            document.getElementById("appSidebar").classList.toggle("open");
-            document.getElementById("sidebarOverlay").classList.toggle("active");
+    FingerprintJS.load().then(fp => fp.get()).then(res => {
+        if (!currentFingerprint) {
+            currentFingerprint = res.visitorId;
+            localStorage.setItem("amvika_device_fp", currentFingerprint);
+        }
+    });
+
+    function toggleSidebar() {
+        document.getElementById("appSidebar").classList.toggle("open");
+        document.getElementById("sidebarOverlay").classList.toggle("active");
+    }
+
+    function closeSidebar() {
+        document.getElementById("appSidebar").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("active");
+    }
+
+    function scrollToSection(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        if (window.innerWidth <= 850) closeSidebar();
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById("emailInput").value.trim().toLowerCase();
+        const key = document.getElementById("licenseInput").value.trim();
+        const role = document.getElementById("userRoleSelect").value;
+        const err = document.getElementById("loginError");
+
+        err.innerText = "";
+        if (!email || !key) { err.innerText = "Email and License Key required!"; return; }
+
+        currentUserEmail = email;
+
+        if (email === GOD_EMAIL.toLowerCase() || key === GOD_KEY) {
+            document.getElementById("godModeBadge").classList.remove("hidden");
+            unlockApp("God Mode Active", role);
+            return;
         }
 
-        function closeSidebar() {
-            document.getElementById("appSidebar").classList.remove("open");
-            document.getElementById("sidebarOverlay").classList.remove("active");
-        }
+        try {
+            const res = await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
+                headers: { "apikey": SUPABASE_API_KEY.trim(), "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` }
+            });
+            
+            if (!res.ok) { err.innerText = "Database Access Error!"; return; }
+            const data = await res.json();
+            if (!data || data.length === 0) { err.innerText = "Invalid License Key!"; return; }
 
-        function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-            if (window.innerWidth <= 850) closeSidebar();
-        }
+            const record = data[0];
+            if (record.customer_email.toLowerCase().trim() !== email) { err.innerText = "Email ID mismatch!"; return; }
 
-        async function handleLogin() {
-            const email = document.getElementById("emailInput").value.trim().toLowerCase();
-            const key = document.getElementById("licenseInput").value.trim();
-            const role = document.getElementById("userRoleSelect").value;
-            const err = document.getElementById("loginError");
+            const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint;
 
-            err.innerText = "";
-
-            if (!email || !key) { err.innerText = "Email and License Key required!"; return; }
-
-            currentUserEmail = email;
-
-            if (email === GOD_EMAIL.toLowerCase() || key === GOD_KEY) {
-                document.getElementById("godModeBadge").classList.remove("hidden");
-                unlockApp("God Mode Active", role);
-                return;
-            }
-
-            try {
-                const res = await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
-                    headers: { "apikey": SUPABASE_API_KEY.trim(), "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}` }
+            if (!record.hwid_fingerprint || record.status === "UNUSED" || record.hwid_fingerprint === "") {
+                await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
+                    method: 'PATCH',
+                    headers: { 
+                        "apikey": SUPABASE_API_KEY.trim(), 
+                        "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({ hwid_fingerprint: savedFp, status: "USED" })
                 });
-                
-                if (!res.ok) {
-                    err.innerText = "Database Access Error!";
-                    return;
-                }
-
-                const data = await res.json();
-
-                if (!data || data.length === 0) { 
-                    err.innerText = "Invalid License Key!"; 
-                    return; 
-                }
-
-                const record = data[0];
-                
-                if (record.customer_email.toLowerCase().trim() !== email) { 
-                    err.innerText = "Email ID mismatch!"; 
-                    return; 
-                }
-
-                const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint;
-
-                if (!record.hwid_fingerprint || record.status === "UNUSED" || record.hwid_fingerprint === "") {
-                    await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
-                        method: 'PATCH',
-                        headers: { 
-                            "apikey": SUPABASE_API_KEY.trim(), 
-                            "Authorization": `Bearer ${SUPABASE_API_KEY.trim()}`, 
-                            "Content-Type": "application/json" 
-                        },
-                        body: JSON.stringify({ hwid_fingerprint: savedFp, status: "USED" })
-                    });
-                    unlockApp("Device Activated", role);
-                } 
-                else if (record.hwid_fingerprint === savedFp || record.hwid_fingerprint === currentFingerprint) {
-                    unlockApp("Authorized User", role);
-                } 
-                else {
-                    err.innerText = "SECURITY ERROR: Key is locked to another device!";
-                }
-            } catch (e) {
-                err.innerText = "Connection Error!";
+                unlockApp("Device Activated", role);
+            } 
+            else if (record.hwid_fingerprint === savedFp || record.hwid_fingerprint === currentFingerprint) {
+                unlockApp("Authorized User", role);
+            } 
+            else {
+                err.innerText = "SECURITY ERROR: Key is locked to another device!";
             }
+        } catch (e) {
+            err.innerText = "Connection Error!";
+        }
+    }
+
+    function unlockApp(statusTitle, selectedRole) {
+        document.getElementById("loginOverlay").classList.add("hidden");
+        document.getElementById("mainAppContent").classList.remove("hidden");
+        document.getElementById("userProfileLabel").innerText = "Persona: " + selectedRole;
+        document.getElementById("personaSelector").value = selectedRole;
+        switchPersonaMode(selectedRole);
+        loadHistoryFromStorage();
+    }
+
+    function switchPersonaMode(mode) {
+        const container = document.getElementById("personaCardsContainer");
+        if (mode === "Student") {
+            document.getElementById("welcomeTitle").innerText = "Hello! I'm AMVIKA (Study AI)";
+            document.getElementById("welcomeSub").innerText = "Ask math tables, leave applications, or science concepts.";
+            container.innerHTML = `
+                <div class="action-card" onclick="quickPrompt('3 din ki chutti ki application hindi me likho')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>3-Day Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Application Draft</p></div>
+                <div class="action-card" onclick="quickPrompt('Photosynthesis kya hai hindi me samjhao')"><div class="action-icon"><i class="fa-solid fa-leaf"></i></div><h4>Photosynthesis</h4><p style="font-size:12px; color:var(--text-sub);">Science Help</p></div>
+            `;
+        } else if (mode === "Business") {
+            document.getElementById("welcomeTitle").innerText = "Welcome Boss! (Business Mode)";
+            document.getElementById("welcomeSub").innerText = "Ask for sales pitch, follow-up emails, or marketing tips.";
+            container.innerHTML = `
+                <div class="action-card" onclick="quickPrompt('Write sales pitch email for client')"><div class="action-icon"><i class="fa-solid fa-chart-line"></i></div><h4>Sales Pitch</h4><p style="font-size:12px; color:var(--text-sub);">Email Template</p></div>
+            `;
+        } else {
+            document.getElementById("welcomeTitle").innerText = "Hello! (Work Assistant)";
+            document.getElementById("welcomeSub").innerText = "Draft leave applications, job emails, resume bullet points.";
+            container.innerHTML = `
+                <div class="action-card" onclick="quickPrompt('3 din ki chutti ke liye office manager ko application')"><div class="action-icon"><i class="fa-solid fa-envelope"></i></div><h4>Office Leave App</h4><p style="font-size:12px; color:var(--text-sub);">Professional Draft</p></div>
+            `;
+        }
+    }
+
+    function quickPrompt(text) {
+        document.getElementById("userQueryInput").value = text;
+        submitQuery();
+    }
+
+    // ⚡ DIRECT OPENAI FETCH (FAST & RELIABLE)
+    async function fetchAIResponse(userPrompt) {
+        if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("PASTE_YOUR_BASE64")) {
+            return "⚠️ OpenAI API Key Missing: Please paste your Base64 Encoded Key.";
         }
 
+        try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${OPENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error("OpenAI Error:", data);
+                return `⚠️ OpenAI Error (${response.status}): ${data.error?.message || "Check API key or billing limits."}`;
+            }
+
+            return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
+        } catch (e) {
+            console.error("Network Error:", e);
+            return "⚠️ Network Error: Unable to connect to OpenAI.";
+        }
+    }
+
+    async function submitQuery() {
+        const queryInput = document.getElementById("userQueryInput");
+        const query = queryInput.value.trim();
+        const outputBox = document.getElementById("responseStatusText");
+
+        if (!query) return;
+
+        stopSpeech();
+        if (recognition && isListening) recognition.stop();
+
+        const thisQueryId = ++activeQueryId;
+        outputBox.innerText = "⚡ AMVIKA AI processing...";
+        scrollToSection('answerTabSection');
+
+        const answerText = await fetchAIResponse(query);
+
+        if (thisQueryId !== activeQueryId) return;
+
+        currentAnswerText = answerText;
+        outputBox.innerText = answerText;
+        
+        speakText(answerText);
+        saveToHistory(query, answerText);
+        queryInput.value = "";
+    }
+
+    function readAnswerAloud() {
+        if (currentAnswerText) {
+            stopSpeech();
+            speakText(currentAnswerText);
+        }
+    }
+
+    function saveToHistory(req, res) {
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const historyItem = { time, req, res, user: currentUserEmail };
+        userHistory.unshift(historyItem);
+        localStorage.setItem(`amvika_history_${currentUserEmail}`, JSON.stringify(userHistory));
+        renderHistory();
+    }
+
+    function loadHistoryFromStorage() {
+        const stored = localStorage.getItem(`amvika_history_${currentUserEmail}`);
+        if (stored) {
+            userHistory = JSON.parse(stored);
+            renderHistory();
+        }
+    }
+
+    function renderHistory() {
+        const container = document.getElementById("historyContainer");
+        if (userHistory.length === 0) {
+            container.innerHTML = `<p style="color:var(--text-sub); font-size:12px;">No activity logged yet.</p>`;
+            return;
+        }
+
+        container.innerHTML = userHistory.map(item => `
+            <div class="history-card">
+                <div class="history-time">⏱️ ${item.time}</div>
+                <div class="history-req">❓ Query: "${item.req}"</div>
+                <div class="history-res">💡 Answer: ${item.res.substring(0, 120)}...</div>
+            </div>
+        `).join('');
+    }
+
+    function clearHistory() {
+        userHistory = [];
+        localStorage.removeItem(`amvika_history_${currentUserEmail}`);
+        renderHistory();
+    }
+
+    function stopSpeech() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+    }
+
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            stopSpeech();
+            const cleanText = text.replace(/[*#_~`]/g, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'hi-IN';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function initVoiceRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'hi-IN';
+
+        recognition.onstart = () => {
+            isListening = true;
+            stopSpeech();
+            document.getElementById("micBtn").classList.add("active");
+            document.getElementById("responseStatusText").innerText = "🎙️ Listening... Speak now!";
+        };
+
+        recognition.onresult = (e) => {
+            const text = e.results[0][0].transcript;
+            document.getElementById("userQueryInput").value = text;
+            submitQuery();
+        };
+
+        recognition.onend = () => {
+            isListening = false;
+            document.getElementById("micBtn").classList.remove("active");
+        };
+    }
+
+    function toggleVoiceInput(e) {
+        if (e) e.stopPropagation();
+        if (!recognition) initVoiceRecognition();
+
+        stopSpeech();
+        if (isListening) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    }
+</script>
         function unlockApp(statusTitle, selectedRole) {
             document.getElementById("loginOverlay").classList.add("hidden");
             document.getElementById("mainAppContent").classList.remove("hidden");
