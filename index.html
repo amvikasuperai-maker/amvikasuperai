@@ -372,41 +372,43 @@
         }
 
         // 🤖 CHATGPT (OPENAI) API FETCH FUNCTION
-        async function fetchAIResponse(userPrompt) {
-            const cleanKey = OPENAI_API_KEY.trim();
-            if (!cleanKey || cleanKey.includes("YOUR_OPENAI_API_KEY_HERE")) {
-                return "⚠️ OpenAI API Key Missing: Please paste your OpenAI Key in the code.";
-            }
+async function fetchAIResponse(userPrompt) {
+    const cleanKey = OPENAI_API_KEY.trim();
+    
+    if (!cleanKey || cleanKey.includes("YOUR_OPENAI_API_KEY_HERE")) {
+        return "⚠️ OpenAI API Key Missing: Please paste your OpenAI Key in the code.";
+    }
 
-            try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${cleanKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "gpt-4o-mini",
-                        messages: [
-                            { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
-                            { role: "user", content: userPrompt }
-                        ],
-                        temperature: 0.7
-                    })
-                });
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cleanKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
+                    { role: "user", content: userPrompt }
+                ],
+                temperature: 0.7
+            })
+        });
 
-                if (!response.ok) {
-                    const err = await response.json();
-                    return `⚠️ OpenAI Error ${response.status}: ${err.error?.message || "Check API Key or Billing Details"}`;
-                }
+        // Parse response
+        const data = await response.json();
 
-                const data = await response.json();
-                return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
-            } catch (e) {
-                return "⚠️ Network Error with OpenAI API.";
-            }
+        if (!response.ok) {
+            return `⚠️ OpenAI Error (${response.status}): ${data.error?.message || "Check API key or account quota."}`;
         }
 
+        return data.choices[0]?.message?.content?.trim() || "⚠️ No output received.";
+    } catch (e) {
+        console.error("Fetch Error details:", e);
+        return "⚠️ Network/CORS Error: If opening directly via file://, run the app through a local server (like Live Server) or check your internet connection.";
+    }
+}
         async function submitQuery() {
             const queryInput = document.getElementById("userQueryInput");
             const query = queryInput.value.trim();
