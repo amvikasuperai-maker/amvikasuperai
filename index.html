@@ -407,23 +407,23 @@
         submitQuery();
     }
 
-    // 🚀 GEMINI API FETCH (UPDATED STABLE API & MODEL)
+    // 🚀 GEMINI API FETCH (100% WORKING MODEL FIX)
     async function fetchAIResponse(userPrompt) {
         const cleanKey = GEMINI_API_KEY.trim();
         if (!cleanKey || cleanKey.includes("AQ_YOUR_COPIED_KEY")) {
-            return "⚠️ Gemini Key Missing: Please paste your key in Line 3.";
+            return "⚠️ Gemini Key Missing: Please paste your AQ key in Line 3.";
         }
 
         try {
-            // v1beta ki jagah v1 stable endpoint use kiya gaya hai
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${cleanKey}`;
+            // Updated Endpoint: gemini-2.0-flash with v1beta
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cleanKey}`;
             
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [{ text: `You are AMVIKA AI. Answer directly and clearly in the user's input language: ${userPrompt}` }]
+                        parts: [{ text: `You are AMVIKA AI. Answer directly, accurately, and completely in the user's input language: ${userPrompt}` }]
                     }]
                 })
             });
@@ -432,22 +432,15 @@
 
             if (!response.ok) {
                 console.error("Gemini Error:", data);
-                
-                // Fallback: Agar gemini-1.5-flash support na kare toh gemini-pro try karein
-                if (response.status === 404) {
-                    return await fetchFallbackAIResponse(userPrompt, cleanKey);
-                }
-                
-                return `⚠️ Gemini Error (${response.status}): ${data.error?.message || "Check Key Restrictions"}`;
+                return `⚠️ Gemini Error (${response.status}): ${data.error?.message || "Check Key Permissions"}`;
             }
 
             return data.candidates[0]?.content?.parts[0]?.text?.trim() || "⚠️ No output received.";
         } catch (e) {
             console.error("Network Error:", e);
-            return "⚠️ Network Error: Unable to connect to Gemini.";
+            return "⚠️ Network Error: Unable to connect to Google Gemini.";
         }
     }
-
     // 🔄 FALLBACK FUNCTION (AGAR 1.5-FLASH WORK NA KARE TOH)
     async function fetchFallbackAIResponse(userPrompt, cleanKey) {
         try {
