@@ -229,13 +229,10 @@
     </div>
 
     <script>
-        <script>
-    <script>
-    // 🔑 1. Base64 Key Insert Karein
-    const ENCODED_OPENAI_KEY = "c2stb3ItdjEtMGIyYjliZDNhYzQ2ZTdhM2U2OTVhNWQ5NDUzYzg0MzBhZmI5YzMzNjI2NGExZjQ5NmYzMzQ4OTRmOWJlZWEyNQ==";
-    const OPENAI_API_KEY = atob(ENCODED_OPENAI_KEY).trim();
+    // 🔑 AAPKI AQ... WALI GOOGLE API KEY YAHAN PASTE KAREIN
+    const GEMINI_API_KEY = "AQ.Ab8RN6KOETpTL7h2FcbD3zou_dFgHXsMWvX6-IcVEZ37Jmyd9w";
 
-    // 🌐 2. Supabase & Credentials
+    // 🌐 Supabase Credentials
     const SUPABASE_URL = "https://kmqnqmyuojtgbkyshuae.supabase.co/rest/v1/licenses";
     const SUPABASE_API_KEY = "sb_publishable_yyimf_B7sdrdN6XjhadR_A_I6_M6UVr";
     const GOD_EMAIL = "amvikasuperai@gmail.com";
@@ -256,7 +253,7 @@
                 currentFingerprint = res.visitorId;
                 localStorage.setItem("amvika_device_fp", currentFingerprint);
             }
-        }).catch(err => console.log("FP Load Error:", err));
+        }).catch(err => console.log("FP Error:", err));
     }
 
     function toggleSidebar() {
@@ -287,16 +284,16 @@
         const key = licenseInput.value.trim();
         const role = roleSelect ? roleSelect.value : "Student";
 
-        err.innerText = "";
+        if (err) err.innerText = "";
 
         if (!email || !key) { 
-            err.innerText = "⚠️ Email and License Key required!"; 
+            if (err) err.innerText = "⚠️ Email and License Key required!"; 
             return; 
         }
 
         currentUserEmail = email;
 
-        // God Mode Pass
+        // God Mode Login
         if (email === GOD_EMAIL.toLowerCase() || key === GOD_KEY) {
             const godBadge = document.getElementById("godModeBadge");
             if (godBadge) godBadge.classList.remove("hidden");
@@ -304,9 +301,9 @@
             return;
         }
 
-        // Supabase License Verify
+        // Supabase DB Check
         try {
-            err.innerText = "⌛ Verifying license...";
+            if (err) err.innerText = "⌛ Verifying license...";
             const res = await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
                 headers: { 
                     "apikey": SUPABASE_API_KEY.trim(), 
@@ -315,23 +312,23 @@
             });
             
             if (!res.ok) { 
-                err.innerText = "⚠️ Database Access Error!"; 
+                if (err) err.innerText = "⚠️ Database Access Error!"; 
                 return; 
             }
 
             const data = await res.json();
             if (!data || data.length === 0) { 
-                err.innerText = "⚠️ Invalid License Key!"; 
+                if (err) err.innerText = "⚠️ Invalid License Key!"; 
                 return; 
             }
 
             const record = data[0];
             if (record.customer_email.toLowerCase().trim() !== email) { 
-                err.innerText = "⚠️ Email ID mismatch!"; 
+                if (err) err.innerText = "⚠️ Email ID mismatch!"; 
                 return; 
             }
 
-            const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint || "device-1";
+            const savedFp = localStorage.getItem("amvika_device_fp") || currentFingerprint || "dev-device";
 
             if (!record.hwid_fingerprint || record.status === "UNUSED" || record.hwid_fingerprint === "") {
                 await fetch(`${SUPABASE_URL}?license_key=eq.${encodeURIComponent(key)}`, {
@@ -349,11 +346,11 @@
                 unlockApp("Authorized User", role);
             } 
             else {
-                err.innerText = "⚠️ Key is locked to another device!";
+                if (err) err.innerText = "⚠️ Key is locked to another device!";
             }
         } catch (e) {
             console.error("Login Error:", e);
-            err.innerText = "⚠️ Network/Connection Error!";
+            if (err) err.innerText = "⚠️ Connection Error!";
         }
     }
 
@@ -410,38 +407,38 @@
         submitQuery();
     }
 
-    // 🤖 AI RESPONSE FETCH (OPENAI)
+    // 🚀 GEMINI API FETCH (UPDATED FOR AQ PREPARED ENDPOINT)
     async function fetchAIResponse(userPrompt) {
-        if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("PASTE_YOUR_BASE64")) {
-            return "⚠️ OpenAI Key Missing: Base64 Key update karein.";
+        const cleanKey = GEMINI_API_KEY.trim();
+        if (!cleanKey || cleanKey.includes("AQ_YOUR_COPIED_KEY")) {
+            return "⚠️ Gemini Key Missing: Please paste your key in Line 3.";
         }
 
         try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            // Using updated Gemini endpoint supporting AQ key authorization
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}`;
+            
+            const response = await fetch(url, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API_KEY}`
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [
-                        { role: "system", content: "You are AMVIKA AI. Answer directly, clearly, and completely in the user's input language." },
-                        { role: "user", content: userPrompt }
-                    ],
-                    temperature: 0.7
+                    contents: [{
+                        parts: [{ text: `You are AMVIKA AI. Answer directly and clearly in the user's input language: ${userPrompt}` }]
+                    }]
                 })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                return `⚠️ OpenAI Error (${response.status}): ${data.error?.message || "Check billing/key"}`;
+                console.error("Gemini Error:", data);
+                return `⚠️ Gemini Error (${response.status}): ${data.error?.message || "Check Key Restrictions"}`;
             }
 
-            return data.choices[0]?.message?.content?.trim() || "⚠️ No response generated.";
+            return data.candidates[0]?.content?.parts[0]?.text?.trim() || "⚠️ No output received.";
         } catch (e) {
-            return "⚠️ Network Error: Unable to connect to OpenAI.";
+            console.error("Network Error:", e);
+            return "⚠️ Network Error: Unable to connect to Gemini.";
         }
     }
 
@@ -578,7 +575,6 @@
             recognition.start();
         }
     }
-</script>
 </script>
         function unlockApp(statusTitle, selectedRole) {
             document.getElementById("loginOverlay").classList.add("hidden");
