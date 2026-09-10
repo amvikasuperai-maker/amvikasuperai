@@ -407,7 +407,7 @@
         submitQuery();
     }
 
-    // 🚀 GEMINI API FETCH (UPDATED ENDPOINT)
+    // 🚀 GEMINI API FETCH (UPDATED STABLE API & MODEL)
     async function fetchAIResponse(userPrompt) {
         const cleanKey = GEMINI_API_KEY.trim();
         if (!cleanKey || cleanKey.includes("AQ_YOUR_COPIED_KEY")) {
@@ -415,8 +415,8 @@
         }
 
         try {
-            // Updated active model: gemini-1.5-flash
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`;
+            // v1beta ki jagah v1 stable endpoint use kiya gaya hai
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${cleanKey}`;
             
             const response = await fetch(url, {
                 method: "POST",
@@ -432,6 +432,12 @@
 
             if (!response.ok) {
                 console.error("Gemini Error:", data);
+                
+                // Fallback: Agar gemini-1.5-flash support na kare toh gemini-pro try karein
+                if (response.status === 404) {
+                    return await fetchFallbackAIResponse(userPrompt, cleanKey);
+                }
+                
                 return `⚠️ Gemini Error (${response.status}): ${data.error?.message || "Check Key Restrictions"}`;
             }
 
@@ -441,7 +447,32 @@
             return "⚠️ Network Error: Unable to connect to Gemini.";
         }
     }
-    async function submitQuery() {
+
+    // 🔄 FALLBACK FUNCTION (AGAR 1.5-FLASH WORK NA KARE TOH)
+    async function fetchFallbackAIResponse(userPrompt, cleanKey) {
+        try {
+            const fallbackUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${cleanKey}`;
+            const response = await fetch(fallbackUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: `You are AMVIKA AI. Answer directly: ${userPrompt}` }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                return `⚠️ Gemini Error (${response.status}): ${data.error?.message || "Model not found"}`;
+            }
+
+            return data.candidates[0]?.content?.parts[0]?.text?.trim() || "⚠️ No output received.";
+        } catch (e) {
+            return "⚠️ Network Error during fallback attempt.";
+        }
+    } 
+        async function submitQuery() {
         const queryInput = document.getElementById("userQueryInput");
         if (!queryInput) return;
         const query = queryInput.value.trim();
