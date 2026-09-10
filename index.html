@@ -407,7 +407,7 @@
         submitQuery();
     }
 
-    // 🚀 GEMINI API FETCH (UPDATED FOR AQ PREPARED ENDPOINT)
+    // 🚀 GEMINI API FETCH (UPDATED ENDPOINT)
     async function fetchAIResponse(userPrompt) {
         const cleanKey = GEMINI_API_KEY.trim();
         if (!cleanKey || cleanKey.includes("AQ_YOUR_COPIED_KEY")) {
@@ -415,8 +415,8 @@
         }
 
         try {
-            // Using updated Gemini endpoint supporting AQ key authorization
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}`;
+            // Updated active model: gemini-1.5-flash
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`;
             
             const response = await fetch(url, {
                 method: "POST",
@@ -441,7 +441,6 @@
             return "⚠️ Network Error: Unable to connect to Gemini.";
         }
     }
-
     async function submitQuery() {
         const queryInput = document.getElementById("userQueryInput");
         if (!queryInput) return;
